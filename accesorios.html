@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Descubrí la colección de joyas y bijouterie de Auren.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif'],
+                        display: ['Cormorant Garamond', 'serif'],
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        :root {
+            --ink: #f3eee4;
+            --ivory: #211f1b;
+            --muted: #716b61;
+            --accent: #8a6f3e;
+        }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            background: #FFFFFF;
+            color: var(--ivory);
+            font-family: Montserrat, sans-serif;
+        }
+        h1, h2 { font-family: 'Cormorant Garamond', serif; }
+        .catalog-hero {
+            position: relative;
+            display: flex;
+            min-height: 18rem;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #211f1b;
+            isolation: isolate;
+        }
+        .catalog-hero::before {
+            position: absolute;
+            z-index: 1;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(12,12,12,.82), rgba(12,12,12,.48)),
+                linear-gradient(0deg, rgba(12,12,12,.34), transparent 65%);
+            content: '';
+        }
+        .catalog-hero video {
+            position: absolute;
+            z-index: 0;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .catalog-hero-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 42rem;
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        .watch-card {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(91,76,51,.15);
+            background: #fffaf1;
+            box-shadow: 0 8px 24px rgba(55,45,30,.06);
+            cursor: pointer;
+            transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+        }
+        .watch-card:hover {
+            border-color: rgba(138,111,62,.55);
+            box-shadow: 0 14px 34px rgba(55,45,30,.12);
+            transform: translateY(-4px);
+        }
+        .watch-product-image, .watch-image {
+            display: grid;
+            width: 100%;
+            height: auto;
+            place-items: center;
+            border-bottom: 1px solid rgba(91,76,51,.14);
+            background: linear-gradient(145deg, #e9e2d6, #f8f4ec 62%, #ded3c0);
+            color: #716b61;
+            object-fit: contain;
+        }
+        .watch-product-image {
+            aspect-ratio: 9 / 10;
+            padding: 10px;
+        }
+        .watch-image {
+            height: 200px;
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+        }
+        .watch-info { min-height: 5.5rem; flex: 1; padding: 1.1rem 1.2rem 1.25rem; background: #141a1a; }
+        .watch-name { color: #c6c4bf; font-size: .9rem; font-weight: 600; }
+        .watch-price { margin-top: .45rem; color: #fffaf1; font-size: .85rem; font-weight: 700; }
+        #modal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            width: min(92vw, 860px);
+            height: min(88vh, 720px);
+            max-height: calc(100vh - 1.5rem);
+            margin: auto;
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid rgba(138,111,62,.28);
+            border-radius: 1rem;
+            color: var(--ivory);
+            background: #fffaf1;
+            box-shadow: 0 24px 90px rgba(48,39,25,.24);
+        }
+        #modal[open] { display: block; }
+        #modal::backdrop { background: rgba(33,31,27,.58); backdrop-filter: blur(8px); }
+        .modal-layout {
+            display: grid;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            grid-template-columns: minmax(0, 1.05fr) minmax(280px, .95fr);
+        }
+        .modal-visual {
+            display: flex;
+            min-width: 0;
+            min-height: 0;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.25rem;
+            background: linear-gradient(145deg, #e9e2d6, #f8f4ec 62%, #ded3c0);
+        }
+        .modal-carousel {
+            position: relative;
+            width: 100%;
+            min-height: 0;
+            flex: 1;
+            overflow: hidden;
+            border: 1px solid rgba(91,76,51,.14);
+            background: linear-gradient(145deg, #e9e2d6, #f8f4ec 62%, #ded3c0);
+        }
+        .modal-carousel-track { display: flex; height: 100%; transition: transform .35s ease; }
+        .modal-carousel-track:empty::after {
+            display: grid;
+            flex: 0 0 100%;
+            min-height: 230px;
+            place-items: center;
+            color: #716b61;
+            content: 'Imagen pendiente de cargar';
+            font-size: .75rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+        .modal-carousel img { display: block; flex: 0 0 100%; width: 100%; height: 100%; min-height: 230px; padding: 1rem; object-fit: contain; }
+        .carousel-control {
+            position: absolute;
+            z-index: 1;
+            top: 50%;
+            display: grid;
+            width: 2.25rem;
+            height: 2.25rem;
+            place-items: center;
+            border: 1px solid rgba(91,76,51,.28);
+            border-radius: 50%;
+            color: #211f1b;
+            background: rgba(255,250,241,.9);
+            transform: translateY(-50%);
+        }
+        .carousel-control:hover { border-color: var(--accent); background: #e9e2d6; }
+        .carousel-control.anterior { left: .75rem; }
+        .carousel-control.siguiente { right: .75rem; }
+        .carousel-dots { position: absolute; bottom: .7rem; left: 50%; display: flex; gap: .4rem; transform: translateX(-50%); }
+        .carousel-dot { width: .4rem; height: .4rem; padding: 0; border: 0; border-radius: 50%; background: rgba(33,31,27,.35); }
+        .carousel-dot.active { background: var(--accent); }
+        .quantity-control {
+            display: grid;
+            width: 100%;
+            grid-template-columns: auto 2.75rem 2.75rem 2.75rem;
+            align-items: center;
+            gap: .55rem;
+            margin-top: .75rem;
+            padding: .4rem;
+            border: 1px solid rgba(91,76,51,.16);
+            background: #f7f1e6;
+        }
+        .quantity-control h2 { margin-right: auto; color: var(--muted); font: 700 .65rem Montserrat, sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+        .quantity-control button, .quantity-control span { display: grid; width: 2.25rem; height: 2.25rem; place-items: center; }
+        .quantity-control button { border: 1px solid rgba(138,111,62,.5); color: var(--accent); font-size: 1.25rem; }
+        .quantity-control button:hover { color: #fffaf1; background: var(--accent); }
+        .quantity-control span { border-block: 1px solid rgba(91,76,51,.16); color: var(--ivory); font-weight: 700; }
+        .modal-copy { display: flex; min-width: 0; min-height: 0; flex-direction: column; overflow-y: auto; padding: 1.5rem; }
+        .modal-label { color: var(--accent); font-size: .7rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; }
+        .modal-copy h2 { margin-top: .5rem; color: #211f1b; font-size: 2.4rem; line-height: .95; }
+        .modal-price { margin-top: .8rem; color: var(--accent); font-size: 1.1rem; font-weight: 700; }
+        .modal-meta { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-top: 1rem; padding: .75rem 0; border-block: 1px solid rgba(91,76,51,.14); }
+        .modal-meta span { display: block; margin-bottom: .25rem; color: var(--muted); font-size: .65rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+        .modal-description { margin-top: 1rem; color: #625d53; font-size: .82rem; line-height: 1.55; }
+        .modal-actions { display: flex; gap: .5rem; margin-top: auto; padding-top: 1rem; }
+        .modal-actions button { flex: 1; padding: .65rem .8rem; border: 1px solid rgba(138,111,62,.55); border-radius: .5rem; font-size: .65rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+        .modal-actions button:first-child { color: #fffaf1; background: var(--accent); }
+        .modal-actions button:first-child:hover { background: #725a32; }
+        .modal-actions button:last-child { color: #211f1b; }
+        .modal-actions button:last-child:hover { background: #e9e2d6; }
+        @media (max-width: 640px) {
+            #modal { height: auto; max-height: calc(100vh - 1rem); overflow-y: auto; }
+            .modal-layout { height: auto; grid-template-columns: minmax(0, 1fr); }
+            .modal-visual { padding: .75rem; }
+            .modal-carousel { min-height: 230px; height: 230px; flex: none; }
+            .modal-carousel img { min-height: 0; max-height: 230px; }
+            .modal-copy { padding: 1rem; }
+            .modal-copy h2 { font-size: 2rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .watch-card, .modal-carousel-track { transition: none; }
+            .watch-card:hover { transform: none; }
+        }
+    </style>
+    <title>Joyas y Bijouterie | Auren</title>
+</head>
+<body class="antialiased">
+    <header class="border-b border-[#5b4c32]/15 bg-[#e9e2d6]">
+        <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-4 py-4 sm:px-6 lg:px-8">
+            <a href="index.html" class="font-sans text-xl font-extrabold uppercase tracking-[.18em] text-[#211f1b]">Bijouterie<span class="text-[#716b61]">.</span></a>
+            <div class="ml-auto flex items-center gap-3">
+                <a href="carrito.html" aria-label="Carrito de compras" class="relative rounded-full border border-[#5b4c32]/30 bg-white/40 p-2.5 transition-colors hover:border-[#8a6f3e] hover:bg-white/70">
+                    <img src="icon-carrito.png" class="h-5 w-5" alt="">
+                    <span id="agregar-carrito" class="absolute -right-1 -top-1 min-w-5 rounded-full bg-[#8a6f3e] px-1 text-center text-[10px] font-bold leading-5 text-white" aria-live="polite">0</span>
+                </a>
+                <a href="index.html" class="hidden rounded-3xl border border-[#5b4c32]/30 px-4 py-2 text-sm font-semibold text-[#211f1b] transition hover:text-[#8a6f3e] sm:block">Volver a la tienda</a>
+            </div>
+        </div>
+        <section class="catalog-hero">
+            <video autoplay muted loop playsinline aria-hidden="true">
+                <source src="joy.mp4" type="video/mp4">
+            </video>
+            <div class="catalog-hero-content">
+                <img src="marca-auren.png" class="mx-auto mb-2 block h-28 w-full max-w-80 object-contain mix-blend-screen sm:h-36" alt="Marca Auren">
+                <p class="mb-2 text-xs font-bold uppercase tracking-[.25em] text-[#d5c5a8]">Colección seleccionada</p>
+                <h1 class="text-4xl font-bold leading-none text-[#fffaf1] sm:text-6xl">Elegancia que te acompaña</h1>
+            </div>
+        </section>
+    </header>
+
+    <main>
+        <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+            <div class="mb-10 border-b border-[#5b4c32]/15 pb-6">
+                <p class="mb-3 text-xs font-bold uppercase tracking-[.25em] text-[#8a6f3e]">Colección de joyas y bijouterie</p>
+                <h2 class="text-4xl font-bold leading-none text-[#211f1b] sm:text-5xl">Elegí tu próximo accesorio</h2>
+                <p class="mt-3 max-w-xl text-sm leading-relaxed text-[#716b61]">Explorá aros, collares, pulseras y más.</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <article class="tarjeta watch-card" data-id="bijouterie-aros-clasicos" data-categoria="Joyas y Bijouterie" data-imagen="" data-imagenes="" 
+                data-titulo="Aros clásicos" data-precios="$6.000" data-marca="AUREN" data-detalles="Agregá aquí la descripción, el material y otros detalles de este producto.">
+                    <img src="aros.jpeg" alt="Aros clásicos" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name">Aros clásicos con forma de C</p><p class="watch-price">$6.000 ARS</p></div>
+                </article>
+
+                <article class="tarjeta watch-card" data-id="bijouterie-collar-delicado" data-categoria="Joyas y Bijouterie" data-imagen="" data-imagenes="" data-titulo="Collar delicado" data-precios="$6.000" data-marca="AUREN" data-detalles="Agregá aquí la descripción, el material y otros detalles de este producto.">
+                    <img src="aros-1.jpeg" alt="Aros clásicos" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name">Aros de aceros inoxidable</p><p class="watch-price">$6.000 ARS</p></div>
+                </article>
+
+                <article class="tarjeta watch-card" data-id="bijouterie-pulsera" data-categoria="Joyas y Bijouterie" data-imagen="" data-imagenes="" data-titulo="Pulsera" data-precios="$6.000" data-marca="AUREN" data-detalles="Agregá aquí la descripción, el material y otros detalles de este producto.">
+                    <img src="aros-2.jpeg" alt="Pulsera" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name">Aros modernos</p><p class="watch-price">$6.000 ARS</p></div>
+                </article>
+               
+                <article class="tarjeta watch-card" data-id="bijouterie-set-joyas" data-categoria="Joyas y Bijouterie" data-imagen="" data-imagenes="" data-titulo="Set de joyas" data-precios="$3.000" data-marca="AUREN" data-detalles="Agregá aquí la descripción, el material y otros detalles de este producto.">
+                    <img src="aros-4.jpeg" alt="Set de joyas" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name">Aros de diseño</p><p class="watch-price">$3.000 ARS</p></div>
+                </article>
+
+                <article class="tarjeta watch-card" data-id="bijouterie-joya-dorada" data-categoria="Joyas y Bijouterie" data-imagen="" data-imagenes="" data-titulo="Joya dorada" data-precios="$6.000" data-marca="AUREN" data-detalles="Agregá aquí la descripción, el material y otros detalles de este producto.">
+                    <img src="aros-5.jpeg" alt="Joya dorada" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name">Aros de aceros inoxidable</p><p class="watch-price">$6.000 ARS</p></div>
+                </article>
+
+                <article class="tarjeta watch-card" data-id="bijouterie-joya-plateada" data-categoria="Joyas y Bijouterie" data-imagen="" data-imagenes="" data-titulo="Joya plateada" data-precios="$4.000" data-marca="AUREN" data-detalles="Agregá aquí la descripción, el material y otros detalles de este producto.">
+                    <img src="aros-6.jpeg" alt="Joya plateada" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name">Aros de perlas</p><p class="watch-price">$4.000 ARS</p></div>
+                </article>
+                
+                <article class="tarjeta watch-card" data-id="bijouterie-accesorio-especial" data-categoria="Joyas y Bijouterie" data-imagen="" data-imagenes="" data-titulo="Accesorio especial" data-precios="$3.000" data-marca="AUREN" data-detalles="Agregá aquí la descripción, el material y otros detalles de este producto.">
+                    <img src="aros-7.jpeg" alt="Accesorio especial" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name">Aro de diseño</p><p class="watch-price">$3.000 ARS</p></div>
+                </article>
+
+                <article class="tarjeta watch-card" data-id="bijouterie-accesorio-especial" data-categoria="Joyas y Bijouterie" data-imagen="" data-imagenes="joyeria-2.jpeg" data-titulo="Accesorio especial" 
+                data-precios="$20.000" data-marca="AUREN" data-detalles="Agregá aquí la descripción, el material y otros detalles de este producto.">
+                    <img src="joyeria.jpeg" alt="Accesorio especial" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name">Set de joyas brillante</p><p class="watch-price">$20.000 ARS</p></div>
+                </article>
+
+                <article class="tarjeta watch-card" data-id="bijouterie-accesorio-especial" data-categoria="Joyas y Bijouterie" data-imagen="" data-imagenes="" data-titulo="Accesorio especial" data-precios="$4.000" data-marca="AUREN" data-detalles="Agregá aquí la descripción, el material y otros detalles de este producto.">
+                    <img src="joyeria-3.jpeg" alt="Accesorio especial" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name">Collar corazon</p><p class="watch-price">$4.000 ARS</p></div>
+                </article>
+
+                <article class="tarjeta watch-card" data-id="bijouterie-accesorio-especial" data-categoria="Joyas y Bijouterie" data-imagen="" data-imagenes="" data-titulo="Accesorio especial" data-precios="$5.000" data-marca="AUREN" data-detalles="Agregá aquí la descripción, el material y otros detalles de este producto.">
+                    <img src="joyeria-4.jpeg" alt="Accesorio especial" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name">Collar perlas</p><p class="watch-price">$5.000 ARS</p></div>
+                </article>
+
+                <article class="tarjeta watch-card" data-id="bijouterie-accesorio-especial" data-categoria="Joyas y Bijouterie" data-imagen="" data-imagenes="" data-titulo="Accesorio especial" data-precios="$4.000" data-marca="AUREN" data-detalles="Agregá aquí la descripción, el material y otros detalles de este producto.">
+                    <img src="joyeria-5.jpeg" alt="Accesorio especial" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name">Collar mariposa</p><p class="watch-price">$4.000 ARS</p></div>
+                </article>
+
+                <article class="tarjeta watch-card" data-id="bijouterie-accesorio-especial" data-categoria="Joyas y Bijouterie" data-imagen="" data-imagenes="" data-titulo="Accesorio especial" data-precios="$5.000" data-marca="AUREN" data-detalles="Agregá aquí la descripción, el material y otros detalles de este producto.">
+                    <img src="joyeria-6.jpeg" alt="Accesorio especial" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name">Collar duo</p><p class="watch-price">$5.000 ARS</p></div>
+                </article>
+
+                <article class="tarjeta watch-card" data-id="bijouterie-accesorio-especial" data-categoria="Joyas y Bijouterie" data-imagen="" data-imagenes="" data-titulo="Accesorio especial" data-precios="$4.000" data-marca="AUREN" data-detalles="Agregá aquí la descripción, el material y otros detalles de este producto.">
+                    <img src="joyeria-7.jpeg" alt="Accesorio especial" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name">Collar estrella</p><p class="watch-price">$4.000 ARS</p></div>
+                </article>
+
+                <article class="tarjeta watch-card" data-id="bijouterie-accesorio-especial" data-categoria="Joyas y Bijouterie" data-imagen="" data-imagenes="" data-titulo="Accesorio especial" data-precios="$4.000" data-marca="AUREN" data-detalles="Agregá aquí la descripción, el material y otros detalles de este producto.">
+                    <img src="pulseria.jpeg" alt="Accesorio especial" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name">Pulsera de plata</p><p class="watch-price">$4.000 ARS</p></div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer class="mt-10 border-t border-[#5b4c32]/15 bg-[#02090a]">
+        <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-6 text-sm text-[#716b61] sm:px-6 lg:px-8">
+            <a href="index.html" class="font-bold text-slate-600">AUREN.</a>
+            <span class="text-slate-600">© 2026 Auren. Todos los derechos reservados.</span>
+            <a href="index.html" class="font-semibold text-[#8a6f3e] hover:text-[#725a32]">Volver a la tienda</a>
+        </div>
+    </footer>
+
+    <dialog id="modal" aria-labelledby="titulo" aria-describedby="detalles">
+        <div class="modal-layout">
+            <div class="modal-visual">
+                <div class="modal-carousel" aria-label="Galería del producto">
+                    <div class="modal-carousel-track" id="modal-carousel-track"></div>
+                    <button type="button" class="carousel-control anterior" aria-label="Imagen anterior">❮</button>
+                    <button type="button" class="carousel-control siguiente" aria-label="Imagen siguiente">❯</button>
+                    <div class="carousel-dots" id="carousel-dots" aria-label="Seleccionar imagen"></div>
+                </div>
+                <div class="quantity-control">
+                    <h2>Cantidad</h2>
+                    <button type="button" class="query-min" aria-label="Disminuir cantidad">-</button>
+                    <span class="query-numer">1</span>
+                    <button type="button" class="query-max" aria-label="Aumentar cantidad">+</button>
+                </div>
+            </div>
+            <div class="modal-copy">
+                <p class="modal-label">Detalle del producto</p>
+                <h2 id="titulo"></h2>
+                <p class="modal-price" id="precios"></p>
+                <div class="modal-meta">
+                    <p><span>Marca</span><strong id="marca"></strong></p>
+                    <p><span>Disponibilidad</span><strong>En stock</strong></p>
+                </div>
+                <p class="modal-description" id="detalles"></p>
+                <form method="dialog" class="modal-actions">
+                    <button type="button">Agregar al carrito</button>
+                    <button type="submit">Cerrar</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <script src="funciones.js" defer></script>
+</body>
+</html>

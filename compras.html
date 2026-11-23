@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif'],
+                        display: ['Cormorant Garamond', 'serif'],
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        :root {
+            --ink: #0b0b0a;
+            --ink-soft: #151513;
+            --ivory: #f8f5ec;
+            --muted: #aaa99f;
+            --accent: #f4d21f;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            min-height: 100vh;
+            background: #FFFFFF;
+            color: var(--ivory);
+            font-family: 'Montserrat', sans-serif;
+            background-image: none;
+        }
+        h1, h2 { font-family: 'Cormorant Garamond', serif; }
+        .search-field:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(244, 210, 31, .12); }
+        .watch-hero {
+            position: relative;
+            display: flex;
+            min-height: 12rem;
+            align-items: center;
+            justify-content: center;
+            isolation: isolate;
+            background: #11110f;
+        }
+        .watch-hero::before {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            background: linear-gradient(90deg, rgba(12,12,12,.82), rgba(12,12,12,.58) 55%, rgba(12,12,12,.38)),
+                linear-gradient(0deg, rgba(12,12,12,.34), transparent 65%);
+            content: '';
+        }
+        .watch-hero video {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+        .watch-hero-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 42rem;
+            padding: 1.25rem 1.5rem;
+            text-align: center;
+        }
+        .watch-product-image {
+            display: block;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 9 / 10;
+            padding: 10px;
+            object-fit: contain;
+            object-position: center;
+            background: linear-gradient(145deg, #292722, #11110f 62%, #252017);
+        }
+        .watch-card {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,.1);
+            background: rgba(21,21,19,.82);
+            transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+            cursor: pointer;
+        }
+        .watch-card:hover {
+            border-color: rgba(244,210,31,.65);
+            box-shadow: 0 0 35px rgba(244,210,31,.12);
+            transform: translateY(-4px);
+        }
+        .watch-image {
+            display: grid;
+            height: 200px;
+            place-items: center;
+            border-bottom: 1px solid rgba(255,255,255,.1);
+            background: linear-gradient(145deg, #292722, #11110f 62%, #252017);
+            color: #77766f;
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+        }
+        .watch-info { min-height: 5.5rem; flex: 1; padding: 1.1rem 1.2rem 1.25rem; }
+        .watch-name { color: var(--ivory); font-size: .9rem; font-weight: 600; }
+        .watch-price { margin-top: .45rem; color: var(--accent); font-size: .85rem; font-weight: 700; letter-spacing: .04em; }
+
+        #modal::backdrop {
+            background: rgba(0, 0, 0, 0.78);
+            backdrop-filter: blur(8px);
+        }
+        #modal {
+            width: min(92vw, 860px);
+            height: min(88vh, 720px);
+            max-height: calc(100vh - 1.5rem);
+            margin: auto;
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid rgba(244, 210, 31, .32);
+            border-radius: 6px;
+            color: var(--ivory);
+            background: #151513;
+            box-shadow: 0 24px 90px rgba(0, 0, 0, .65), 0 0 45px rgba(244, 210, 31, .08);
+        }
+        .modal-layout { display: grid; grid-template-columns: minmax(340px, 1.05fr) minmax(280px, .95fr); }
+        .modal-visual {
+            display: flex;
+            flex-direction: column;
+            min-height: auto;
+            place-items: center;
+            padding: 1.25rem;
+            background: linear-gradient(145deg, #292722, #11110f 62%, #252017);
+        }
+        .modal-carousel {
+            position: relative;
+            width: 100%;
+            min-height: 390px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,.1);
+            background: linear-gradient(145deg, #292722, #11110f 62%, #252017);
+        }
+        .modal-carousel-track {
+            display: flex;
+            transition: transform .35s ease;
+        }
+        .modal-carousel img {
+            display: block;
+            flex: 0 0 100%;
+            width: 100%;
+            height: 390px;
+            padding: 1rem;
+            object-fit: contain;
+        }
+        .carousel-control {
+            position: absolute;
+            top: 50%;
+            display: grid;
+            width: 2.25rem;
+            height: 2.25rem;
+            place-items: center;
+            border: 1px solid rgba(255,255,255,.35);
+            border-radius: 50%;
+            color: var(--ivory);
+            background: rgba(11,11,10,.72);
+            font-size: 1rem;
+            line-height: 1;
+            transform: translateY(-50%);
+            transition: color .2s ease, background .2s ease, border-color .2s ease;
+            z-index: 1;
+        }
+        .carousel-control:hover {
+            border-color: var(--accent);
+            color: var(--ink);
+            background: var(--accent);
+        }
+        .carousel-control.anterior { left: .75rem; }
+        .carousel-control.siguiente { right: .75rem; }
+        .carousel-dots {
+            position: absolute;
+            bottom: .7rem;
+            left: 50%;
+            display: flex;
+            gap: .4rem;
+            transform: translateX(-50%);
+        }
+        .carousel-dot {
+            padding: 0;
+            width: .4rem;
+            height: .4rem;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,.45);
+        }
+        .carousel-dot.active { background: var(--accent); }
+        .quantity-control {
+            display: grid;
+            grid-template-columns: auto 2.75rem 2.75rem 2.75rem;
+            align-items: center;
+            gap: .55rem;
+            width: 100%;
+            margin-top: .75rem;
+            padding: .4rem;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(11,11,10,.42);
+        }
+        .quantity-control h2 {
+            margin-right: auto;
+            color: var(--muted);
+            font-family: 'Montserrat', sans-serif;
+            font-size: .65rem;
+            font-weight: 700;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+        }
+        .quantity-control button,
+        .quantity-control span {
+            display: grid;
+            width: 2.25rem;
+            height: 2.25rem;
+            place-items: center;
+        }
+        .quantity-control button {
+            border: 1px solid rgba(244,210,31,.5);
+            color: var(--accent);
+            font-size: 1.25rem;
+            line-height: 1;
+            transition: color .2s ease, background .2s ease, border-color .2s ease;
+        }
+        .quantity-control button:hover {
+            border-color: var(--accent);
+            color: var(--ink);
+            background: var(--accent);
+        }
+        .quantity-control span {
+            border-top: 1px solid rgba(255,255,255,.12);
+            border-bottom: 1px solid rgba(255,255,255,.12);
+            color: var(--ivory);
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .modal-copy { display: flex; flex-direction: column; padding: 1.5rem; }
+        .modal-label { color: var(--accent); font-size: .7rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; }
+        .modal-copy h2 { margin-top: .5rem; color: #fffaf1; font-size: 2.4rem; line-height: .95; }
+        .modal-price { margin-top: .8rem; color: var(--accent); font-size: 1.1rem; font-weight: 700; }
+        .modal-meta { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-top: 1rem; padding: .75rem 0; border-top: 1px solid rgba(255,255,255,.1); border-bottom: 1px solid rgba(255,255,255,.1); }
+        .modal-meta span { display: block; margin-bottom: .25rem; color: var(--muted); font-size: .65rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+        .modal-description { margin-top: 1rem; color: #d0cec4; font-size: .82rem; line-height: 1.55; }
+        .modal-actions { display: flex; gap: .5rem; margin-top: auto; padding-top: 1rem; }
+        .modal-actions button { flex: 1; padding: .65rem .8rem; border: 1px solid rgba(244,210,31,.55); font-size: .65rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; transition: background .2s ease, color .2s ease; }
+        .modal-actions button:first-child { color: var(--ink); background: var(--accent); }
+        .modal-actions button:first-child:hover { background: #fff06b; }
+        .modal-actions button:last-child { color: var(--ivory); }
+        .modal-actions button:last-child:hover { color: var(--ink); background: var(--ivory); }
+        @media (max-width: 640px) {
+            #modal { height: auto; }
+            .modal-layout { grid-template-columns: 1fr; }
+            .modal-visual { padding: .75rem; }
+            .modal-carousel { min-height: 230px; }
+            .modal-visual img { max-height: 230px; }
+            .modal-copy { padding: 1rem; }
+            .modal-copy h2 { font-size: 2rem; }
+        }
+        :root {
+            --ink: #f3eee4;
+            --ink-soft: #e9e2d6;
+            --ivory: #211f1b;
+            --muted: #716b61;
+            --accent: #8a6f3e;
+        }
+        body {
+            background-color: #FFFFFF;
+            background-image: none;
+            color: #211f1b;
+        }
+        main [class~="text-[#fffaf1]"] { color: #211f1b !important; }
+        main [class~="text-[#aaa99f]"] { color: #716b61 !important; }
+        main [class~="text-[#f4d21f]"] { color: #8a6f3e !important; }
+        main [class~="border-white/10"] { border-color: rgba(91,76,51,.15) !important; }
+        .watch-card {
+            border-color: rgba(255,255,255,.14) !important;
+            background: #fffaf1 !important;
+            box-shadow: 0 8px 24px rgba(55,45,30,.06);
+        }
+        .watch-card:hover {
+            border-color: rgba(138,111,62,.55) !important;
+            box-shadow: 0 14px 34px rgba(55,45,30,.12);
+        }
+        .watch-product-image, .watch-image {
+            background: linear-gradient(145deg, #e9e2d6, #f8f4ec 62%, #ded3c0);
+            border-color: rgba(255,255,255,.14);
+            color: #716b61;
+        }
+        .watch-info { background: #141a1a; }
+        .watch-name, .watch-price { color: #f3eee4; }
+        #modal {
+            border-color: rgba(138,111,62,.28);
+            border-radius: 1rem;
+            color: #211f1b;
+            background: #fffaf1;
+            box-shadow: 0 24px 90px rgba(48,39,25,.24);
+        }
+        #modal::backdrop { background: rgba(33,31,27,.58); }
+        .modal-visual, .modal-carousel {
+            background: linear-gradient(145deg, #e9e2d6, #f8f4ec 62%, #ded3c0);
+        }
+        .modal-carousel { border-color: rgba(91,76,51,.14); }
+        .modal-copy h2 { color: #211f1b; }
+        .modal-description { color: #625d53; }
+        .modal-meta { border-color: rgba(91,76,51,.14); }
+        .carousel-control {
+            border-color: rgba(91,76,51,.28);
+            color: #211f1b;
+            background: rgba(255,250,241,.9);
+        }
+        .quantity-control {
+            border-color: rgba(91,76,51,.16);
+            background: #f7f1e6;
+        }
+        .quantity-control span { border-color: rgba(91,76,51,.16); color: #211f1b; }
+        .modal-actions button { border-color: rgba(138,111,62,.55); border-radius: .5rem; }
+        .modal-actions button:first-child { color: #fffaf1; }
+        .modal-actions button:first-child:hover { background: #725a32; }
+        .modal-actions button:last-child { color: #211f1b; }
+        .modal-actions button:last-child:hover { color: #211f1b; background: #e9e2d6; }
+        @media (prefers-reduced-motion: reduce) {
+            .watch-card { transition: none; }
+            .watch-card:hover { transform: none; }
+        }
+    </style>
+    <title>Compras | Tienda</title>
+</head>
+<body class="antialiased">
+    <header class="border-b border-[#5b4c32]/15 bg-[#e9e2d6] backdrop-blur-xl">
+        <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-4 py-4 sm:px-6 lg:px-8">
+            <a href="index.html" class="font-sans text-xl font-extrabold uppercase tracking-[.18em] text-[#211f1b]">Relojes<span class="text-[#716b61]">.</span></a>
+            <div class="ml-auto flex items-center gap-3">
+                <a href="carrito.html" aria-label="Carrito de compras" class="relative rounded-full border border-[#5b4c32]/30 bg-white/40 p-2.5 transition-colors hover:border-[#8a6f3e] hover:bg-white/70">
+                    <img src="icon-carrito.png" class="h-5 w-5" alt="">
+                    <span id="agregar-carrito" class="absolute -right-1 -top-1 min-w-5 rounded-full bg-[#8a6f3e] px-1 text-center text-[10px] font-bold leading-5 text-white" aria-live="polite">0</span>
+                </a>
+                <a href="index.html" class="hidden rounded-3xl border border-[#5b4c32]/30 px-4 py-2 text-sm font-semibold text-[#211f1b] transition hover:text-[#8a6f3e] sm:block">Volver a la tienda</a>
+            </div>
+        </div>
+        <div class="w-full">
+            <div class="watch-hero w-full overflow-hidden">
+                <video autoplay muted loop playsinline aria-hidden="true">
+                    <source src="video-portada.mp4" type="video/mp4">
+                </video>
+                <div class="watch-hero-content">
+                    <img src="marca-auren.png" class="mx-auto mb-2 block h-28 w-full max-w-80 object-contain mix-blend-screen sm:h-36" alt="Marca Auren">
+                    <p class="mb-2 text-xs font-bold uppercase tracking-[.25em] text-[#d5c5a8]">Colección seleccionada</p>
+                    <h1 class="text-4xl font-bold leading-none text-[#fffaf1] sm:text-6xl">Encontrá tu estilo</h1>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+            <div class="mb-10 border-b border-white/10 pb-6">
+                <p class="mb-3 text-xs font-bold uppercase tracking-[.25em] text-[#f4d21f]">Colección de relojes</p>
+                <h2 class="text-4xl font-bold leading-none text-[#fffaf1] sm:text-5xl">Elegí tu próximo reloj</h2>
+                <p class="mt-3 max-w-xl text-sm leading-relaxed text-[#aaa99f]">Diseños seleccionados para acompañar cada momento.</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+
+                <article class="tarjeta watch-card"
+                data-imagen="reloj-foto-1.png"
+                data-imagenes="reloj-foto-1.png"
+                data-titulo="Reloj clásico negro" 
+                data-precios="$18.000 ARS" 
+                data-marca="AUREN"
+                data-detalles="Diseño unisex de inspiración minimalista, con esfera limpia y una correa cómoda para acompañarte todos los días. Su estilo sobrio combina fácilmente con looks casuales o más formales.">
+                     
+                    <img src="reloj-foto-1.png" class="watch-product-image" alt="Reloj clásico negro">
+                    <div class="watch-info"><p class="watch-name">Reloj de cuarzo unisex versatil</p><p class="watch-price">$18.000 ARS</p></div>
+                </article>
+
+
+                <article class="tarjeta watch-card"
+                data-imagen="reloj-mujer-3.jpeg"
+                data-imagenes="reloj-mujer-3.jpeg"
+                data-titulo="Reloj inteligente" 
+                data-precios="$20.000 ARS" 
+                data-marca="AUREN"
+                data-detalles="Reloj inteligente y líneas delicadas para elevar cualquier conjunto. Una pieza luminosa pensada para ocasiones especiales y para sumar un toque refinado a tu estilo diario.">
+
+                    <img src="reloj-mujer-3.jpeg" class="watch-product-image" alt="Reloj dorado elegante">
+                    <div class="watch-info"><p class="watch-name">Reloj inteligente deportivo</p><p class="watch-price">$20.000 ARS</p></div>
+                </article>
+
+
+                <article class="tarjeta watch-card"
+                data-titulo="Reloj inteligente" 
+                data-precios="$20.000 ARS" 
+                data-marca="AUREN"
+                data-detalles="La expresión más pura del diseño funcional: una esfera equilibrada, proporciones livianas y un acabado fácil de combinar. Perfecto para una estética simple y actual.">
+
+                    <img src="reloj-negro.png" class="watch-product-image" alt="Reloj inteligente">
+                    <div class="watch-info"><p class="watch-name">Reloj inteligente deportivo</p><p class="watch-price">$20.000 ARS</p></div>
+                </article>
+
+
+                <article class="tarjeta watch-card"
+                data-imagen="reloj-mujer-2.png"
+                data-imagenes="reloj-mujer-2.png,relo-mujer-dorado.jpeg,reloj-mujer-utilidad.jpeg"
+                data-titulo="Reloj deportivo" 
+                data-precios="$18.000 ARS" 
+                data-marca="AUREN"
+                data-detalles="Una opción cómoda y resistente para acompañar tus jornadas activas. Su diseño deportivo mantiene una apariencia cuidada sin perder practicidad.">
+
+                    <img src="reloj-mujer-2.png" class="watch-product-image" alt="Reloj deportivo">
+                    <div class="watch-info"><p class="watch-name">Reloj deportivo</p><p class="watch-price">$18.000 ARS</p></div>
+                </article>
+
+
+                <article class="tarjeta watch-card"
+                data-imagen="reloj-inteligente-h.png"
+                data-imagenes="reloj-inteligente-h.png,maya-metalica-utilidad.jpeg,maya-metalica-detalles.jpeg"
+                data-titulo="Reloj con malla metálica" 
+                data-precios="$30.000 ARS" 
+                data-marca="AUREN"
+                data-detalles="Su malla metálica aporta un ajuste cómodo y un perfil moderno. Un reloj sobrio y urbano, pensado para pasar del trabajo a una salida sin cambiar de accesorio.">
+                     
+                    <img src="reloj-inteligente-h.png" class="watch-product-image" alt="Reloj con malla metálica">
+                    <div class="watch-info"><p class="watch-name">Reloj con malla metálica</p><p class="watch-price">$30.000 ARS</p></div>
+                </article>
+
+
+                <article class="tarjeta watch-card"
+                data-imagen="reloj-aluminio.jpeg"
+                data-imagenes="reloj-aluminio.jpeg"
+                data-titulo="Reloj clásico marrón" 
+                data-precios="$30.000 ARS" 
+                data-marca="AUREN"
+                data-detalles="Una interpretación cálida del reloj clásico, con carácter atemporal y una presencia elegante. Su tono marrón funciona especialmente bien con prendas neutras y tonos tierra.">
+
+                    <img src="reloj-aluminio.jpeg" alt="Reloj clásico marrón" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name">Reloj clásico marrón</p><p class="watch-price">$30.000 ARS</p></div>
+                </article>
+
+
+                <article class="tarjeta watch-card"
+                data-titulo="Reloj ejecutivo" 
+                data-precios="$00.000 ARS" 
+                data-marca="AUREN"
+                data-detalles="Una pieza de líneas precisas y presencia distinguida. Diseñada para completar una imagen profesional con un detalle discreto, elegante y fácil de llevar.">
+
+                    <img src="reloj-azul.png" alt="Reloj ejecutivo" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name text-green-500">Proximamente disponible</p><p class="watch-price">ARS</p></div>
+                </article>
+
+
+                <article class="tarjeta watch-card"
+                data-titulo="Reloj negro mate" 
+                data-precios="$00.000 ARS" 
+                data-marca="AUREN"
+                data-detalles="Su acabado negro mate le da una estética moderna y contundente. Un diseño fácil de combinar, ideal para quienes prefieren accesorios sobrios con mucha personalidad.">
+
+                    <img src="reloj-cristal.png" alt="Reloj negro mate" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name text-green-500">Proximamente disponible</p><p class="watch-price">ARS</p></div>
+                </article>
+
+
+                <article class="tarjeta watch-card"
+                data-titulo="Reloj vintage" 
+                data-precios="$00.000 ARS" 
+                data-marca="AUREN"
+                data-detalles="Inspirado en la relojería clásica, combina encanto retro con una lectura actual. Un accesorio con identidad para sumar historia y estilo a tus combinaciones.">
+
+                    <img src="reloj-cristal-dorado.png" alt="Reloj vintage" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name text-green-500">Proximamente disponible</p><p class="watch-price">ARS</p></div>
+                </article>
+
+
+                <article class="tarjeta watch-card"
+                data-titulo="Reloj de cuero negro" 
+                data-precios="$00.000 ARS" 
+                data-marca="AUREN"
+                data-detalles="La textura del cuero negro y su diseño limpio crean una pieza cómoda, elegante y duradera. Una elección segura para usar todos los días.">
+
+                    <img src="reloj-mujer-rojo.png" alt="Reloj de cuero negro" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name text-green-500">Proximamente disponible</p><p class="watch-price">ARS</p></div>
+                </article>
+
+
+                <article class="tarjeta watch-card"
+                data-titulo="Reloj clásico azul" 
+                data-precios="$00.000 ARS" 
+                data-marca="AUREN"
+                data-detalles="El tono azul suma profundidad a una silueta clásica y versátil. Una alternativa fresca para quienes quieren salir de los neutros sin perder elegancia.">
+
+                    <img src="reloj-oro.png" alt="Reloj clásico azul" class="watch-product-image">
+                    <div class="watch-info"><p class="watch-name text-green-500">Proximamente disponible</p><p class="watch-price">ARS</p></div>
+                </article>
+
+
+                <dialog id="modal" aria-labelledby="titulo" aria-describedby="detalles">
+                    <div class="modal-layout">
+                        <div class="modal-visual">
+                            <div class="modal-carousel" aria-label="Galería del producto">
+                                <div class="modal-carousel-track" id="modal-carousel-track"></div>
+                                <button type="button" class="carousel-control anterior" aria-label="Imagen anterior">❮</button>
+                                <button type="button" class="carousel-control siguiente" aria-label="Imagen siguiente">❯</button>
+                                <div class="carousel-dots" id="carousel-dots" aria-label="Seleccionar imagen"></div>
+                            </div>
+                            <div class="quantity-control">
+                                <h2>Cantidad</h2>
+                                <button type="button" class="query-min" aria-label="Disminuir cantidad">-</button>
+                                <span class="query-numer">1</span>
+                                <button type="button" class="query-max" aria-label="Aumentar cantidad">+</button>
+                            </div>
+                        </div>
+                        <div class="modal-copy">
+                            <p class="modal-label">Detalle del producto</p>
+                            <h2 id="titulo"></h2>
+                            <p class="modal-price" id="precios"></p>
+                            <div class="modal-meta">
+                                <p><span>Marca</span><strong id="marca"></strong></p>
+                                <p><span>Disponibilidad</span><strong>En stock</strong></p>
+                            </div>
+                            <p class="modal-description" id="detalles"></p>
+                            <form method="dialog" class="modal-actions">
+                                <button type="button">Agregar al carrito</button>
+                                <button type="submit">Cerrar</button>
+                            </form>
+                        </div>
+                    </div>
+                </dialog>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-white border-t border-white/10 text-slate-300 mt-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div>
+                <span class="text-xl font-extrabold text-slate-700">AUREN<span class="text-brand-300">.</span></span>
+                <p class="mt-3 text-sm text-slate-700">Tu tienda de accesorios de confianza. Estilo, calidad y buen precio.</p>
+            </div>
+            <div>
+                <h3 class="mb-3 font-semibold text-slate-700">Enlaces</h3>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" class="text-slate-700 transition-colors hover:text-slate-700">Inicio</a></li>
+                    <li><a href="#catalogos" class="text-slate-700 transition-colors hover:text-slate-700">Categorías</a></li>
+                    <li><a href="#destacados" class="text-slate-700 transition-colors hover:text-slate-700">Productos</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="mb-3 font-semibold text-slate-700">Ayuda</h3>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" class="text-slate-700 transition-colors hover:text-slate-700">Envíos</a></li>
+                    <li><a href="#" class="text-slate-700 transition-colors hover:text-slate-700">Devoluciones</a></li>
+                    <li><a href="#" class="text-slate-700 transition-colors hover:text-slate-700">Contacto</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="mb-3 font-semibold text-slate-700">Seguinos</h3>
+                <div class="flex gap-3">
+                    <a href="#" aria-label="Instagram" class="text-slate-700 h-9 w-9 flex items-center justify-center rounded-full bg-white/5 border border-slate-600 hover:bg-brand-500 hover:text-slate-950 transition-colors">IG</a>
+                    <a href="#" aria-label="Facebook" class="text-slate-700 h-9 w-9 flex items-center justify-center rounded-full bg-white/5 border border-slate-600 hover:bg-brand-500 hover:text-slate-950 transition-colors">FB</a>
+                    <a href="#" aria-label="Twitter" class="text-slate-700 h-9 w-9 flex items-center justify-center rounded-full bg-white/5 border border-slate-600 hover:bg-brand-500 hover:text-slate-950 transition-colors">X</a>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-slate-800 py-4 text-center text-xs text-slate-700">
+            © 2026 Tienda. Todos los derechos reservados.
+        </div>
+    </footer>
+
+    <script src="funciones.js" defer></script>
+
+</body>
+</html>

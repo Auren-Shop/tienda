@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explorá la colección de indumentaria para hombre y mujer de Auren.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif'],
+                        display: ['Cormorant Garamond', 'serif'],
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        :root {
+            --ivory: #211f1b;
+            --muted: #716b61;
+            --accent: #8a6f3e;
+        }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            background: #fff;
+            color: var(--ivory);
+            font-family: Montserrat, sans-serif;
+        }
+        h1, h2 { font-family: 'Cormorant Garamond', serif; }
+        .catalog-hero {
+            position: relative;
+            display: flex;
+            min-height: 18rem;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #211f1b;
+            isolation: isolate;
+        }
+        .catalog-hero::before {
+            position: absolute;
+            z-index: 1;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(12,12,12,.82), rgba(12,12,12,.48)),
+                linear-gradient(0deg, rgba(12,12,12,.34), transparent 65%);
+            content: '';
+        }
+        .catalog-hero > img {
+            position: absolute;
+            z-index: 0;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center 54%;
+        }
+        .catalog-hero-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 48rem;
+            padding: 3rem 1.5rem;
+            text-align: center;
+        }
+        .watch-card {
+            overflow: hidden;
+            border: 1px solid rgba(91,76,51,.15);
+            background: #fffaf1;
+            box-shadow: 0 8px 24px rgba(55,45,30,.06);
+            cursor: pointer;
+            transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+        }
+        .watch-card:hover, .watch-card:focus-visible {
+            border-color: rgba(138,111,62,.55);
+            box-shadow: 0 14px 34px rgba(55,45,30,.12);
+            transform: translateY(-4px);
+            outline: none;
+        }
+        .watch-image {
+            display: grid;
+            width: 100%;
+            height: 200px;
+            place-items: center;
+            border-bottom: 1px solid rgba(91,76,51,.14);
+            background: linear-gradient(145deg, #e9e2d6, #f8f4ec 62%, #ded3c0);
+            color: #716b61;
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .14em;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        .watch-info { min-height: 5.5rem; padding: 1.1rem 1.2rem 1.25rem; background: #141a1a; }
+        .watch-name { color: #c6c4bf; font-size: .9rem; font-weight: 600; }
+        .watch-price { margin-top: .45rem; color: #fffaf1; font-size: .85rem; font-weight: 700; }
+        .catalog-tab {
+            position: relative;
+            border: 0;
+            background: transparent;
+            color: #716b61;
+            transition: color .2s ease;
+        }
+        .catalog-tab::after {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            background: #8a6f3e;
+            content: '';
+            transform: scaleX(0);
+            transform-origin: center;
+            transition: transform .25s ease;
+        }
+        .catalog-tab:hover,
+        .catalog-tab[aria-selected="true"] { color: #211f1b; }
+        .catalog-tab:hover::after,
+        .catalog-tab[aria-selected="true"]::after { transform: scaleX(1); }
+        .catalog-tab:focus-visible { outline: 2px solid #8a6f3e; outline-offset: 4px; }
+        #modal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            width: min(92vw, 860px);
+            height: min(88vh, 720px);
+            max-height: calc(100vh - 1.5rem);
+            margin: auto;
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid rgba(138,111,62,.28);
+            border-radius: 1rem;
+            color: var(--ivory);
+            background: #fffaf1;
+            box-shadow: 0 24px 90px rgba(48,39,25,.24);
+        }
+        #modal[open] { display: block; }
+        #modal::backdrop { background: rgba(33,31,27,.58); backdrop-filter: blur(8px); }
+        .modal-layout { display: grid; width: 100%; height: 100%; min-height: 0; grid-template-columns: minmax(0, 1.05fr) minmax(280px, .95fr); }
+        .modal-visual { display: flex; min-width: 0; min-height: 0; flex-direction: column; align-items: center; padding: 1.25rem; background: linear-gradient(145deg, #e9e2d6, #f8f4ec 62%, #ded3c0); }
+        .modal-carousel { position: relative; width: 100%; min-height: 0; flex: 1; overflow: hidden; border: 1px solid rgba(91,76,51,.14); background: linear-gradient(145deg, #e9e2d6, #f8f4ec 62%, #ded3c0); }
+        .modal-carousel-track { display: flex; height: 100%; transition: transform .35s ease; }
+        .modal-carousel-track:empty::after {
+            display: grid;
+            flex: 0 0 100%;
+            min-height: 230px;
+            place-items: center;
+            color: #716b61;
+            content: 'Imagen pendiente de cargar';
+            font-size: .75rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+        .modal-carousel img { display: block; flex: 0 0 100%; width: 100%; height: 100%; min-height: 230px; padding: 1rem; object-fit: contain; }
+        .carousel-control { position: absolute; z-index: 1; top: 50%; display: grid; width: 2.25rem; height: 2.25rem; place-items: center; border: 1px solid rgba(91,76,51,.28); border-radius: 50%; color: #211f1b; background: rgba(255,250,241,.9); transform: translateY(-50%); }
+        .carousel-control:hover { border-color: var(--accent); background: #e9e2d6; }
+        .carousel-control.anterior { left: .75rem; }
+        .carousel-control.siguiente { right: .75rem; }
+        .carousel-dots { position: absolute; bottom: .7rem; left: 50%; display: flex; gap: .4rem; transform: translateX(-50%); }
+        .carousel-dot { width: .4rem; height: .4rem; padding: 0; border: 0; border-radius: 50%; background: rgba(33,31,27,.35); }
+        .carousel-dot.active { background: var(--accent); }
+        .quantity-control { display: grid; width: 100%; grid-template-columns: auto 2.75rem 2.75rem 2.75rem; align-items: center; gap: .55rem; margin-top: .75rem; padding: .4rem; border: 1px solid rgba(91,76,51,.16); background: #f7f1e6; }
+        .quantity-control h2 { margin-right: auto; color: var(--muted); font: 700 .65rem Montserrat, sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+        .quantity-control button, .quantity-control span { display: grid; width: 2.25rem; height: 2.25rem; place-items: center; }
+        .quantity-control button { border: 1px solid rgba(138,111,62,.5); color: var(--accent); font-size: 1.25rem; }
+        .quantity-control button:hover { color: #fffaf1; background: var(--accent); }
+        .quantity-control span { border-block: 1px solid rgba(91,76,51,.16); color: var(--ivory); font-weight: 700; }
+        .modal-copy { display: flex; min-width: 0; min-height: 0; flex-direction: column; overflow-y: auto; padding: 1.5rem; }
+        .modal-label { color: var(--accent); font-size: .7rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; }
+        .modal-copy h2 { margin-top: .5rem; color: #211f1b; font-size: 2.4rem; line-height: .95; }
+        .modal-price { margin-top: .8rem; color: var(--accent); font-size: 1.1rem; font-weight: 700; }
+        .modal-meta { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-top: 1rem; padding: .75rem 0; border-block: 1px solid rgba(91,76,51,.14); }
+        .modal-meta span { display: block; margin-bottom: .25rem; color: var(--muted); font-size: .65rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+        .modal-description { margin-top: 1rem; color: #625d53; font-size: .82rem; line-height: 1.55; }
+        .size-selector { margin-top: 1rem; }
+        .size-selector[hidden] { display: none; }
+        .size-selector h3 { margin: 0 0 .55rem; color: var(--muted); font: 700 .65rem Montserrat, sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+        .size-options { display: flex; flex-wrap: wrap; gap: .45rem; }
+        .size-option { min-width: 2.75rem; height: 2.75rem; padding: 0 .7rem; border: 1px solid rgba(39, 39, 38, 0.5); border-radius: .35rem; color: var(--ivory); font-size: .75rem; font-weight: 700; background: #f3f3f2; }
+        .size-option:hover { background: #201708; color: #e9e2d6;}
+        .size-option.selected { border-color: var(--accent); color: #fffaf1; background: var(--accent); }
+        .modal-actions { display: flex; gap: .5rem; margin-top: auto; padding-top: 1rem; }
+        .modal-actions button { flex: 1; padding: .65rem .8rem; border: 1px solid rgba(138,111,62,.55); border-radius: .5rem; font-size: .65rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+        .modal-actions button:first-child { color: #fffaf1; background: var(--accent); }
+        .modal-actions button:first-child:hover { background: #725a32; }
+        .modal-actions button:first-child:disabled { cursor: not-allowed; opacity: .6; }
+        .modal-actions button:last-child { color: #211f1b; }
+        .modal-actions button:last-child:hover { background: #e9e2d6; }
+        @media (max-width: 640px) {
+            #modal { height: auto; max-height: calc(100vh - 1rem); overflow-y: auto; }
+            .modal-layout { height: auto; grid-template-columns: minmax(0, 1fr); }
+            .modal-visual { padding: .75rem; }
+            .modal-carousel { min-height: 230px; height: 230px; flex: none; }
+            .modal-carousel img { min-height: 0; max-height: 230px; }
+            .modal-copy { padding: 1rem; }
+            .modal-copy h2 { font-size: 2rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .watch-card, .modal-carousel-track { transition: none; }
+            .watch-card:hover, .watch-card:focus-visible { transform: none; }
+        }
+    </style>
+    <title>Indumentaria | Auren</title>
+</head>
+<body class="antialiased">
+    <header class="border-b border-[#5b4c32]/15 bg-[#e9e2d6]">
+        <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-4 py-4 sm:px-6 lg:px-8">
+            <a href="index.html" class="font-sans text-xl font-extrabold uppercase tracking-[.18em] text-[#211f1b]">Indumentaria<span class="text-[#716b61]">.</span></a>
+            <div class="ml-auto flex items-center gap-3">
+                <a href="carrito.html" aria-label="Carrito de compras" class="relative rounded-full border border-[#5b4c32]/30 bg-white/40 p-2.5 transition-colors hover:border-[#8a6f3e] hover:bg-white/70">
+                    <img src="icon-carrito.png" class="h-5 w-5" alt="">
+                    <span id="agregar-carrito" class="absolute -right-1 -top-1 min-w-5 rounded-full bg-[#8a6f3e] px-1 text-center text-[10px] font-bold leading-5 text-white" aria-live="polite">0</span>
+                </a>
+                <a href="index.html" class="hidden rounded-3xl border border-[#5b4c32]/30 px-4 py-2 text-sm font-semibold text-[#211f1b] transition hover:text-[#8a6f3e] sm:block">Volver a la tienda</a>
+            </div>
+        </div>
+        <section class="catalog-hero">
+            <img src="ropa.jpeg" alt="">
+            <div class="catalog-hero-content">
+                <img src="marca-auren.png" class="mx-auto mb-2 block h-28 w-full max-w-80 object-contain mix-blend-screen sm:h-36" alt="Marca Auren">
+                <p class="mb-2 text-xs font-bold uppercase tracking-[.25em] text-[#d5c5a8]">Colección seleccionada</p>
+                <h1 class="text-4xl font-bold leading-none text-[#fffaf1] sm:text-6xl">Estilo para cada día</h1>
+            </div>
+        </section>
+    </header>
+
+    <main>
+        <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+            <div class="mb-8 border-b border-[#5b4c32]/15 pb-6">
+                <p class="mb-3 text-xs font-bold uppercase tracking-[.25em] text-[#8a6f3e]">Colección de indumentaria</p>
+                <h2 class="text-4xl font-bold leading-none text-[#211f1b] sm:text-5xl">Encontrá tu próximo look</h2>
+                <p class="mt-3 max-w-xl text-sm leading-relaxed text-[#716b61]">Elegí una colección para explorar sus prendas.</p>
+            </div>
+
+            <div class="mb-8 flex flex-wrap gap-8 border-b border-[#5b4c32]/15" role="tablist" aria-label="Secciones de indumentaria">
+                <button id="tab-hombre" class="catalog-tab px-1 pb-3 text-sm font-bold" type="button" role="tab" aria-selected="true" aria-controls="panel-hombre" tabindex="0">Ropa de hombre</button>
+                <button id="tab-mujer" class="catalog-tab px-1 pb-3 text-sm font-bold" type="button" role="tab" aria-selected="false" aria-controls="panel-mujer" tabindex="-1">Ropa de mujer</button>
+            </div>
+
+            <section id="panel-hombre" role="tabpanel" aria-labelledby="tab-hombre">
+                <h3 class="sr-only">Ropa de hombre</h3>
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+
+                    <article class="tarjeta watch-card" data-id="indumentaria-hombre-abrigo" data-categoria="Indumentaria hombre" data-imagen="" data-imagenes="" data-titulo="Remera de hombre" data-precios="$ 30.700" data-marca="Auren" data-talles="S,M,L,XL" data-detalles="Remera con cuello redondo color negra grisor con estampado de letras.">
+                        <img src="remera-hombre-hugg.png" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">Remera de manga corta con estampado de letra</p><p class="watch-price border-x-0 border-y border-gray-300 text-center">$ 30.700</p></div>
+                    </article>
+
+                    <article class="tarjeta watch-card" data-id="indumentaria-hombre-remera" data-categoria="Indumentaria hombre" data-imagen="" data-imagenes="" data-titulo="REMERAS" data-precios="$ 31.165" data-marca="Auren" data-talles="S,M,L,XL" data-detalles="Remera de manga corta con cuello redondo y estampado minimalista.">
+                        <img src="remera-hombre-marron.png" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">Remera de manga corta con estampado minimalista</p><p class="watch-price border-x-0 border-y border-gray-300 text-center">$ 31.165</p></div>
+                    </article>
+
+                    <article class="tarjeta watch-card" data-id="indumentaria-hombre-abrigo" data-categoria="Indumentaria hombre" data-imagen="" data-imagenes="" data-titulo="REMERAS" data-precios="$ 38.450" data-marca="Auren" data-talles="S,M,L,XL" 
+                    data-detalles="Remera Polo a raya, formal, ceremonial, elegante para salidas de noches y eventos especiales, con tela de textura suave y colores vibrantes.">
+                        <img src="remera-hombre-con-cuello.png" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">Remera Polo, formal</p><p class="watch-price border-x-0 border-y border-gray-300 text-center">$ 38.450</p></div>
+                    </article>
+
+                    <article class="tarjeta watch-card" data-id="indumentaria-hombre-remera" data-categoria="Indumentaria hombre" data-imagen="" data-imagenes="" data-titulo="REMERAS" data-precios="$ 25.600" data-marca="Auren" data-talles="S,M,L,XL" 
+                    data-detalles="Remera de bloques de color vintage, cuello redondeado, super a la moda, calidad de tela suave con colores vibrantes.">
+                        <img src="remera-hombre-gris-black.png" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">Remera de bloques de color vintage</p><p class="watch-price border-x-0 border-y border-gray-300 text-center">$ 25.600</p></div>
+                    </article>
+
+                    <article class="tarjeta watch-card" data-id="indumentaria-hombre-remera" data-categoria="Indumentaria hombre" data-imagen="" data-imagenes="" data-titulo="REMERAS" data-precios="$ 29.510" data-marca="Auren" data-talles="S,M,L,XL" 
+                    data-detalles="Remeras casual de moda para hombre, cuello redondo de manga cortas, lavable a maquina, comoda en todo las estaciones e ideal para el uso diario, con tela de textura suave.">
+                        <img src="remeras-hombres-rayas.jpeg" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">Black grisor</p><p class="watch-price border-x-0 border-y border-gray-300 text-center">$ 29.510</p></div>
+                    </article>
+
+                    <article class="tarjeta watch-card" data-id="indumentaria-hombre-remera" data-categoria="Indumentaria hombre" data-imagen="" data-imagenes="remeras-hombres-tres.jpeg" data-titulo="Set/3 Remeras" data-precios="$ 68.888" data-marca="Auren" data-talles="S,M,L,XL" data-detalles="Set de 3 remeras de manga corta con etiqueta casual. Tambien puedes conseguirla individualmente.">
+                        <img src="remeras-hombres-tres.jpeg" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">pack / 3 remeras de manga corta</p><p class="watch-price border-x-0 border-y border-gray-300 text-center">$ 68.888</p></div>
+                    </article>
+
+                    <article class="tarjeta watch-card" data-id="indumentaria-hombre-camisa" data-categoria="Indumentaria hombre" data-imagen="" data-imagenes="" data-titulo="Camisa clásica" data-precios="Precio a definir" data-marca="Auren" data-talles="S,M,L,XL" data-detalles="Completá la descripción, los talles disponibles, el material y el precio de esta prenda.">
+                        <img src="remera-black.png" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">Remera Black</p><p class="watch-price text-green-500 font-bold">Proximamente disponible</p></div>
+                    </article>
+
+                    <article class="tarjeta watch-card" data-id="indumentaria-hombre-remera" data-categoria="Indumentaria hombre" data-imagen="" data-imagenes="" data-titulo="Remera básica" data-precios="Precio a definir" data-marca="Auren" data-talles="S,M,L,XL" data-detalles="Completá la descripción, los talles disponibles, el material y el precio de esta prenda.">
+                        <img src="remera-hombre-boos.png" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">Remera Boos</p><p class="watch-price text-green-500 font-bold">Proximamente disponible</p></div>
+                    </article>
+
+                    <article class="tarjeta watch-card" data-id="indumentaria-hombre-pantalon" data-categoria="Indumentaria hombre" data-imagen="" data-imagenes="" data-titulo="Pantalón urbano" data-precios="Precio a definir" data-marca="Auren" data-talles="S,M,L,XL" data-detalles="Completá la descripción, los talles disponibles, el material y el precio de esta prenda.">
+                        <img src="remera-hombre-paris.png" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">Remera Paris</p><p class="watch-price text-green-500 font-bold">Proximamente disponible</p></div>
+                    </article>
+
+                    <article class="tarjeta watch-card" data-id="indumentaria-hombre-abrigo" data-categoria="Indumentaria hombre" data-imagen="" data-imagenes="" data-titulo="Abrigo de temporada" data-precios="Precio a definir" data-marca="Auren" data-talles="S,M,L,XL" data-detalles="Completá la descripción, los talles disponibles, el material y el precio de esta prenda.">
+                        <img src="remera-hombre-black-grisor.png" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">Black grisor</p><p class="watch-price text-green-500 font-bold">Proximamente disponible</p></div>
+                    </article>
+                </div>
+            </section>
+
+            <section id="panel-mujer" role="tabpanel" aria-labelledby="tab-mujer" hidden>
+                <h3 class="sr-only">Ropa de mujer</h3>
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+
+                    <article class="tarjeta watch-card" data-id="indumentaria-mujer-vestido" data-categoria="Indumentaria mujer" data-imagen="" data-imagenes="" data-titulo="Vestido de temporada" data-precios="Precio a definir" data-marca="Auren" data-talles="S,M,L,XL" data-detalles="Completá la descripción, los talles disponibles, el material y el precio de esta prenda.">
+                        <img src="remera-mujer-ping-white.png" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">Remera de ajuste regular, blusa casual</p><p class="watch-price border-x-0 border-y border-gray-300 text-center">$ 22.623</p></div>
+                    </article>
+
+                    <article class="tarjeta watch-card" data-id="indumentaria-mujer-vestido" data-categoria="Indumentaria mujer" data-imagen="" data-imagenes="" data-titulo="Vestido de temporada" data-precios="Precio a definir" data-marca="Auren" data-talles="S,M,L,XL" data-detalles="Completá la descripción, los talles disponibles, el material y el precio de esta prenda.">
+                        <img src="remeras-mujer-musculosa.jpeg" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">Conjuto casual de 4 piezas, top ajustable</p><p class="watch-price border-x-0 border-y border-gray-300 text-center">$ 36.700</p></div>
+                    </article>
+
+                    <article class="tarjeta watch-card" data-id="indumentaria-mujer-vestido" data-categoria="Indumentaria mujer" data-imagen="" data-imagenes="" data-titulo="Vestido de temporada" data-precios="Precio a definir" data-marca="Auren" data-talles="S,M,L,XL" data-detalles="Completá la descripción, los talles disponibles, el material y el precio de esta prenda.">
+                        <img src="remeras-mujer-musculosa-grisor.jpeg" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">3 piezas/set, remera basicas casuales.</p><p class="watch-price border-x-0 border-y border-gray-300 text-center">$ 39.999</p></div>
+                    </article>
+
+                    <article class="tarjeta watch-card" data-id="indumentaria-mujer-vestido" data-categoria="Indumentaria mujer" data-imagen="" data-imagenes="" data-titulo="Vestido de temporada" data-precios="Precio a definir" data-marca="Auren" data-talles="S,M,L,XL" data-detalles="Completá la descripción, los talles disponibles, el material y el precio de esta prenda.">
+                        <img src="remeras-mujer-musculosa-rayas.jpeg" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">Conjunto de 3 piezas, con manga dolma casual.</p><p class="watch-price border-x-0 border-y border-gray-300 text-center">$ 40.000</p></div>
+                    </article>
+
+                    <article class="tarjeta watch-card" data-id="indumentaria-mujer-blusa" data-categoria="Indumentaria mujer" data-imagen="" data-imagenes="" data-titulo="Blusa clásica" data-precios="Precio a definir" data-marca="Auren" data-talles="S,M,L,XL" data-detalles="Completá la descripción, los talles disponibles, el material y el precio de esta prenda.">
+                        <img src="remera-mujer-lunar.png" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">Remera Lunar</p><p class="watch-price text-green-500">Proximamente disponible</p></div>
+                    </article>
+                    
+                    <article class="tarjeta watch-card" data-id="indumentaria-mujer-remera" data-categoria="Indumentaria mujer" data-imagen="" data-imagenes="" data-titulo="Remera básica" data-precios="Precio a definir" data-marca="Auren" data-talles="S,M,L,XL" data-detalles="Completá la descripción, los talles disponibles, el material y el precio de esta prenda.">
+                        <img src="remera-mujer-religion.png" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">Remera Cristiano</p><p class="watch-price text-green-500">Proximamente disponible</p></div>
+                    </article>
+
+                    <article class="tarjeta watch-card" data-id="indumentaria-mujer-pantalon" data-categoria="Indumentaria mujer" data-imagen="" data-imagenes="" data-titulo="Pantalón urbano" data-precios="Precio a definir" data-marca="Auren" data-talles="S,M,L,XL" data-detalles="Completá la descripción, los talles disponibles, el material y el precio de esta prenda.">
+                        <img src="remera-mujer-casual.png" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">Remera Casual</p><p class="watch-price text-green-500">Proximamente disponible</p></div>
+                    </article>
+
+                    <article class="tarjeta watch-card" data-id="indumentaria-mujer-vestido" data-categoria="Indumentaria mujer" data-imagen="" data-imagenes="" data-titulo="Vestido de temporada" data-precios="Precio a definir" data-marca="Auren" data-talles="S,M,L,XL" data-detalles="Completá la descripción, los talles disponibles, el material y el precio de esta prenda.">
+                        <img src="remera-mujer-vacaciones.png" alt="Imagen pendiente de cargar" class="watch-product-image">
+                        <div class="watch-info"><p class="watch-name">Remera Vacacional</p><p class="watch-price text-green-500">Proximamente disponible</p></div>
+                    </article>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <footer class="mt-10 border-t border-[#5b4c32]/15 bg-[#02090a]">
+        <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-6 text-sm text-[#716b61] sm:px-6 lg:px-8">
+            <a href="index.html" class="font-bold text-slate-200">AUREN.</a>
+            <span>© 2026 Auren. Todos los derechos reservados.</span>
+            <a href="index.html" class="font-semibold text-[#8a6f3e] hover:text-[#725a32]">Volver a la tienda</a>
+        </div>
+    </footer>
+
+    <dialog id="modal" aria-labelledby="titulo" aria-describedby="detalles">
+        <div class="modal-layout">
+            <div class="modal-visual">
+                <div class="modal-carousel" aria-label="Galería del producto">
+                    <div class="modal-carousel-track" id="modal-carousel-track"></div>
+                    <button type="button" class="carousel-control anterior" aria-label="Imagen anterior">❮</button>
+                    <button type="button" class="carousel-control siguiente" aria-label="Imagen siguiente">❯</button>
+                    <div class="carousel-dots" id="carousel-dots" aria-label="Seleccionar imagen"></div>
+                </div>
+                <div class="quantity-control">
+                    <h2>Cantidad</h2>
+                    <button type="button" class="query-min" aria-label="Disminuir cantidad">-</button>
+                    <span class="query-numer">1</span>
+                    <button type="button" class="query-max" aria-label="Aumentar cantidad">+</button>
+                </div>
+            </div>
+            <div class="modal-copy">
+                <p class="modal-label">Detalle del producto</p>
+                <h2 id="titulo"></h2>
+                <p class="modal-price" id="precios"></p>
+                <div class="modal-meta">
+                    <p><span>Marca</span><strong id="marca"></strong></p>
+                    <p><span>Categoría</span><strong id="product-category">Indumentaria</strong></p>
+                </div>
+                <p class="modal-description" id="detalles"></p>
+                <div class="size-selector" id="size-selector" hidden>
+                    <h3>Seleccioná un talle</h3>
+                    <div class="size-options" id="size-options"></div>
+                </div>
+                <form method="dialog" class="modal-actions">
+                    <button type="button">Agregar al carrito</button>
+                    <button type="submit">Cerrar</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <script src="funciones.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = [...document.querySelectorAll('[role="tab"]')];
+
+            const selectTab = (tab) => {
+                tabs.forEach((item) => {
+                    const selected = item === tab;
+                    item.setAttribute('aria-selected', String(selected));
+                    item.tabIndex = selected ? 0 : -1;
+                    document.getElementById(item.getAttribute('aria-controls')).hidden = !selected;
+                });
+            };
+
+            tabs.forEach((tab, index) => {
+                tab.addEventListener('click', () => selectTab(tab));
+                tab.addEventListener('keydown', (event) => {
+                    let nextIndex = index;
+                    if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
+                    else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
+                    else if (event.key === 'Home') nextIndex = 0;
+                    else if (event.key === 'End') nextIndex = tabs.length - 1;
+                    else return;
+
+                    event.preventDefault();
+                    tabs[nextIndex].focus();
+                    selectTab(tabs[nextIndex]);
+                });
+            });
+
+            document.querySelectorAll('.tarjeta').forEach((card) => {
+                const category = card.dataset.categoria;
+                const updateProductModal = () => {
+                    document.getElementById('product-category').textContent = category;
+                    const addButton = document.querySelector('.modal-actions button[type="button"]');
+                    const hasPrice = card.dataset.precios !== 'Precio a definir';
+                    const needsSize = Boolean(card.dataset.talles);
+                    const hasSize = Boolean(document.querySelector('.size-option.selected'));
+                    addButton.disabled = !hasPrice || (needsSize && !hasSize);
+                    addButton.textContent = !hasPrice
+                        ? 'Precio pendiente'
+                        : needsSize && !hasSize
+                            ? 'Elegí un talle'
+                            : 'Agregar al carrito';
+                };
+                card.addEventListener('click', updateProductModal);
+                card.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        updateProductModal();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

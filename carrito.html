@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito | Auren</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --ink: #f3eee4; --panel: #fffaf1; --ivory: #211f1b; --muted: #716b61; --accent: #8a6f3e; }
+        body { min-height: 100vh; background: #FFFFFF; color: var(--ivory); font-family: Montserrat, sans-serif; }
+        #checkout-modal { position: fixed; inset: 0; width: 100%; max-width: none; height: 100vh; height: 100dvh; max-height: none; margin: 0; padding: 0; overflow: hidden; border: 0; color: #211f1b; background: #fffdf8; }
+        #checkout-modal[open] { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); }
+        #checkout-modal::backdrop { background: rgba(33,31,27,.72); }
+        .checkout-visual { position: relative; display: flex; min-height: 0; flex-direction: column; justify-content: space-between; overflow: hidden; background: #211f1b url("quienes-somos.jpeg") center / cover no-repeat; color: #fffaf1; }
+        .checkout-visual::before { position: absolute; inset: 0; content: ""; background: linear-gradient(180deg, rgba(20,18,15,.34), rgba(20,18,15,.12) 42%, rgba(20,18,15,.78)); }
+        .checkout-visual > * { position: relative; z-index: 1; }
+        #checkout-modal .checkout-visual .text-white { color: #fffaf1 !important; }
+        .checkout-panel { min-width: 0; overflow-y: auto; background: #111; color: #fff; }
+        .checkout-panel-header { background: #080808; }
+        #checkout-modal .checkout-panel .border-white\/10 { border-color: rgba(255,255,255,.18) !important; }
+        #checkout-modal .checkout-panel .text-white,
+        #checkout-modal .checkout-panel [class~="text-[#aaa99f]"],
+        #checkout-modal .checkout-panel [class~="text-[#f4d21f]"],
+        #checkout-modal .checkout-panel [class~="text-[#8a6f3e]"],
+        #checkout-modal .checkout-panel [class~="text-[#725a32]"],
+        #checkout-modal .checkout-panel [class~="text-slate-600"] { color: #fff !important; }
+        .checkout-field label, .checkout-legend { color: #fff; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+        .checkout-field input { border-bottom-color: rgba(255,255,255,.35); color: #fff; }
+        .checkout-field input::placeholder { color: #b8b8b8; }
+        #checkout-modal .text-white { color: #211f1b !important; }
+        .checkout-field { display: flex; flex-direction: column; gap: .45rem; }
+        .checkout-field input { width: 100%; min-height: 2.75rem; border: 0; border-bottom: 1px solid rgba(255,255,255,.35); border-radius: 0; background: transparent; padding: .5rem .25rem; color: #fff; outline: none; transition: border-color .2s ease, color .2s ease; }
+        .checkout-field input::placeholder { color: #b8b8b8; }
+        .checkout-field input:hover,
+        .checkout-field input:focus { border-bottom-color: #8a6f3e; }
+        #checkout-form .payment-option { display: flex; align-items: center; gap: .6rem; border: 1px solid rgba(255,255,255,.2); border-radius: .65rem; padding: .85rem 1rem; color: #fff; cursor: pointer; transition: border-color .2s ease, background .2s ease, box-shadow .2s ease; }
+        #checkout-form .payment-option:hover,
+        #checkout-form .payment-option:has(input:checked) { border-color: #fff; background: #292929; box-shadow: 0 0 0 2px rgba(255,255,255,.1); }
+        #checkout-form input[type="radio"] { accent-color: #8a6f3e; }
+        body > header { background: #211f1b; border-color: rgba(243,238,228,.14); }
+        body > header a:last-child { color: #f3eee4; transition: color .2s ease, background-color .2s ease; }
+        body > header a:last-child:hover { color: #211f1b; }
+        body > main { border-color: rgba(91,76,51,.14); }
+        body .text-white { color: #211f1b !important; }
+        body [class~="text-[#f4d21f]"] { color: #8a6f3e !important; }
+        body [class~="text-[#aaa99f]"] { color: #716b61 !important; }
+        body [class~="text-[#0b0b0a]"] { color: #fffaf1 !important; }
+        body [class~="border-white/10"],
+        body [class~="border-white/15"],
+        body [class~="border-white/20"] { border-color: rgba(91,76,51,.15) !important; }
+        body [class~="bg-[#151513]"] { background-color: #fffaf1 !important; }
+        #checkout-button { background-color: #8a6f3e; color: #fffaf1; }
+        #checkout-form button[type="submit"] { background-color: #111; color: #fff; }
+        #checkout-button:hover:not(:disabled) { background-color: #725a32; }
+        #checkout-form button[type="submit"]:hover { background-color: #292929; }
+        #checkout-form button[type="submit"] { min-height: 52px; font-size: .9rem; }
+        #checkout-modal .checkout-panel #checkout-form button[type="submit"] { background-color: white !important; color: black !important; }
+        #checkout-modal .checkout-panel #checkout-form button[type="submit"]:hover { background-color: #292929 !important; }
+        @media (max-width: 760px) {
+            #checkout-modal[open] { grid-template-columns: minmax(0, 1fr); grid-template-rows: 150px minmax(0, 1fr); }
+            .checkout-visual { padding: 1rem 1.5rem !important; }
+            .checkout-visual-copy { display: none; }
+            .checkout-panel-header { padding-top: 1.1rem !important; padding-bottom: 1.1rem !important; }
+            #checkout-form { gap: 1.25rem !important; }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <header class="border-b border-white/10 px-4 py-5">
+        <div class="mx-auto grid max-w-8xl grid-cols-[1fr_auto_1fr] items-center">
+            <span aria-hidden="true"></span>
+            <a href="index.html" class="text-3xl font-extrabold uppercase tracking-[.18em] text-[#f4d21f]">
+                <img src="marca-auren.png" class="w-[150px] h-14" alt="Marca Auren">
+            </a>
+            <a href="index.html#destacados" class="justify-self-end rounded-full border border-white/30 px-4 py-2 text-sm text-white/30 transition hover:border-brand-400/50 hover:bg-brand-500/10">Volver a la tienda</a>
+        </div>
+    </header>
+
+    <main class="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] border border-white/20 mt-2">
+        <div class="min-w-0">
+            <div class="mb-8 rounded-2xl border border-white/20 bg-[#fffaf1] px-5 py-5 shadow-sm sm:px-7">
+                <p class="mb-2 text-xs font-bold uppercase tracking-[.26em] text-[#8a6f3e]">Tu selección</p>
+                <h1 class="text-4xl font-bold text-white">Carrito de compras</h1>
+                <p id="cart-summary" class="mt-2 text-sm text-[#aaa99f]"></p>
+            </div>
+
+            <section id="cart-list" class="grid gap-4"></section>
+        </div>
+
+        <div class="">
+
+            <aside class="h-fit rounded-2xl border border-white/15 bg-[#fffaf1] p-6 shadow-sm lg:sticky lg:top-6">
+                <div class="flex flex-col gap-5">
+                    <h2 class="text-lg font-bold text-white">Resumen del pedido</h2>
+                    <div class="flex justify-between gap-4 text-sm text-[#aaa99f]">
+                        <span>Total de artículos</span>
+                        <span id="cart-item-count" class="text-white">0</span>
+                    </div>
+                    
+                    <div class="flex justify-between gap-4 border-t border-white/10 pt-5">
+                        <span class="font-bold text-white">Total a pagar</span>
+                        <span id="cart-total" class="font-bold text-[#f4d21f]">$0 ARS</span>
+                    </div>
+
+                    <span class="text-sm">Verifica bien los productos que quieres llevar antes de pagar</span>
+                    <button id="checkout-button" type="button" disabled class="w-full rounded-full bg-[#8a6f3e] px-6 py-4 text-base font-bold text-[#fffaf1] transition hover:bg-[#725a32] disabled:cursor-not-allowed disabled:opacity-40">
+                        Pagar
+                    </button>
+                </div>
+
+                <div class="max-w-2xl flex flex-col gap-2 mt-6">
+                    <span>Formas de pagos</span>
+                    <div class="grid grid-cols-[120px_120px] gap-4">
+                        <img src="Visa.jpeg" class="h-12 w-[120px]" alt="">
+                        <img src="mercado-pago.jpeg" class="h-12 w-[120px]" alt="">
+                        <img src="naranja-x.png" class="h-12 w-[120px]" alt="">
+                    </div>
+                </div>
+                
+            </aside>
+        </div>
+
+    </main>
+    
+    <dialog id="checkout-modal" aria-labelledby="checkout-title">
+        <aside class="checkout-visual p-8 sm:p-10" aria-label="Auren, accesorios y estilo">
+            <a href="index.html" class="text-xl font-extrabold tracking-[.28em] text-white">AUREN</a>
+            <div class="checkout-visual-copy mb-8 max-w-md">
+                <p class="mb-4 text-xs font-bold uppercase tracking-[.28em] text-white/75">Auren · Accesorios</p>
+                <p class="text-4xl font-semibold leading-tight">Un detalle que habla de vos.</p>
+                <p class="mt-4 max-w-sm text-sm leading-6 text-white/75">Elegí tus favoritos. Nosotros te acompañamos en cada paso.</p>
+            </div>
+        </aside>
+
+        <section class="checkout-panel">
+            <div class="checkout-panel-header px-6 py-12 sm:px-8">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[.2em] text-[#8a6f3e]">Tu pedido</p>
+                        <h2 id="checkout-title" class="mt-2 text-2xl font-bold text-white">Finaliza tu compra</h2>
+                    </div>
+                    <button id="close-checkout" type="button" aria-label="Cerrar checkout" class="text-4xl leading-none text-[#aaa99f] transition hover:text-white">&times;</button>
+                </div>
+            </div>
+
+            <form id="checkout-form" class="flex flex-col gap-6 px-6 py-6 sm:px-8 bg-black">
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div class="checkout-field sm:col-span-2">
+                    <label for="checkout-name">Nombre completo</label>
+                    <input id="checkout-name" name="name" type="text" autocomplete="name" placeholder="Ej.: María González" required>
+                </div>
+                <div class="checkout-field">
+                    <label for="checkout-email">Correo electrónico</label>
+                    <input id="checkout-email" name="email" type="email" autocomplete="email" placeholder="nombre@correo.com" required>
+                </div>
+                <div class="checkout-field">
+                    <label for="checkout-phone">Teléfono</label>
+                    <input id="checkout-phone" name="phone" type="tel" autocomplete="tel" placeholder="+54 9 11 1234-5678" required>
+                </div>
+                <div class="checkout-field sm:col-span-2">
+                    <label for="checkout-address">Dirección de entrega</label>
+                    <input id="checkout-address" name="address" type="text" autocomplete="street-address" placeholder="Calle, número, localidad" required>
+                </div>
+            </div>
+
+            <fieldset class="border-t border-white/10 pt-4">
+                <legend class="checkout-legend mb-3">Forma de pago preferida</legend>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <label class="payment-option text-sm font-semibold">
+                        <input type="radio" name="payment" value="transferencia" required>
+                        <span>Transferencia</span>
+                    </label>
+
+                    <label class="flex flex-col segundo-payment-option text-sm font-semibold">
+                        <span class="text-sm">Elegir otro medio de pago</span>
+                        <a class="text-slate-600 transition hover:text-[#ffe447]" href="#">Ver opciones</a>
+                    </label>
+                </div>
+            </fieldset>
+
+            <div class="flex items-center justify-between border-t border-white/10 pt-5">
+                <span class="text-sm text-[#aaa99f]">Total a pagar</span>
+                <strong id="checkout-total" class="text-lg text-[#f4d21f]">$0 ARS</strong>
+            </div>
+            <button type="submit" class="self-start rounded-full bg-[#f4d21f] px-8 py-4 font-bold text-[#0b0b0a] transition hover:bg-[#ffe447]">Confirmar pedido</button>
+            <p id="checkout-success" hidden class="border border-[#f4d21f]/40 p-4 text-center text-sm text-[#725a32]" role="status">Se preparó tu pedido en WhatsApp. Para enviarlo, confirma el mensaje desde WhatsApp.</p>
+            <a id="checkout-whatsapp-link" hidden target="_blank" rel="noopener noreferrer" class="rounded-full border border-[#8a6f3e]/50 px-6 py-3 text-center font-bold text-[#725a32] transition hover:bg-[#eee5d5]">Abrir pedido en WhatsApp</a>
+            </form>
+        </section>
+    </dialog>
+
+
+    <script>
+        const cartKey = 'auren-carrito';
+        const cartList = document.getElementById('cart-list');
+        const cartSummary = document.getElementById('cart-summary');
+        const cartItemCount = document.getElementById('cart-item-count');
+        const cartTotal = document.getElementById('cart-total');
+        const checkoutButton = document.getElementById('checkout-button');
+        const checkoutModal = document.getElementById('checkout-modal');
+        const closeCheckout = document.getElementById('close-checkout');
+        const checkoutForm = document.getElementById('checkout-form');
+        const checkoutTotal = document.getElementById('checkout-total');
+        const checkoutSuccess = document.getElementById('checkout-success');
+        const checkoutWhatsappLink = document.getElementById('checkout-whatsapp-link');
+        const whatsappNumber = '5493516137651';
+        let cart = JSON.parse(localStorage.getItem(cartKey) || '[]');
+
+        const renderCart = () => {
+            const itemCount = cart.reduce((count, product) => count + (Number(product.quantity) || 1), 0);
+            cartSummary.textContent = `${itemCount} ${itemCount === 1 ? 'producto agregado' : 'productos agregados'}`;
+            cartItemCount.textContent = itemCount;
+            const total = cart.reduce((sum, product) => {
+                const amount = Number(String(product.price).replace(/\D/g, '')) || 0;
+                return sum + amount * (Number(product.quantity) || 1);
+            }, 0);
+            cartTotal.textContent = new Intl.NumberFormat('es-AR', {
+                style: 'currency',
+                currency: 'ARS',
+                maximumFractionDigits: 0
+            }).format(total);
+            checkoutTotal.textContent = cartTotal.textContent;
+            checkoutButton.disabled = cart.length === 0;
+            cartList.replaceChildren();
+
+            if (!cart.length) {
+                cartList.innerHTML = '<p class="border border-dashed border-white/15 p-8 text-center text-[#716b61]">Tu carrito está vacío.</p>';
+                return;
+            }
+
+            cart.forEach((product) => {
+                const item = document.createElement('article');
+                item.className = 'flex flex-col gap-5 rounded-2xl border border-white/10 bg-[#fffaf1] p-5 shadow-sm sm:flex-row sm:items-center';
+                item.innerHTML = `
+                    ${product.image ? `<img src="${product.image}" alt="${product.title}" class="h-32 w-full object-cover sm:w-40">` : ''}
+                    <div class="flex-1">
+                        <p class="text-xs font-bold uppercase tracking-[.2em] text-[#8a6f3e]">${product.category}</p>
+                        <h2 class="mt-2 text-xl font-bold text-[#211f1b]">${product.title}</h2>
+                        <p class="mt-2 font-bold text-[#8a6f3e]">${product.price}</p>
+                        ${product.size ? `<p class="mt-1 text-sm font-bold text-[#625d53]">Talle: ${product.size}</p>` : ''}
+                        <p class="mt-1 text-sm text-[#716b61]">Cantidad: ${Number(product.quantity) || 1}</p>
+                    </div>
+                    <button type="button" class="remove-cart rounded-full border border-[#8a6f3e]/60 px-4 py-2 text-xs font-bold uppercase tracking-[.12em] text-[#8a6f3e] transition hover:bg-[#8a6f3e] hover:text-white">Quitar</button>`;
+
+                item.querySelector('.remove-cart').addEventListener('click', () => {
+                    cart = cart.filter((entry) =>
+                        !(entry.id === product.id && (entry.size || '') === (product.size || ''))
+                    );
+                    localStorage.setItem(cartKey, JSON.stringify(cart));
+                    renderCart();
+                });
+                cartList.append(item);
+            });
+        };
+
+        renderCart();
+
+        checkoutButton.addEventListener('click', () => {
+            checkoutSuccess.hidden = true;
+            checkoutWhatsappLink.hidden = true;
+            checkoutForm.reset();
+            checkoutModal.showModal();
+        });
+
+        closeCheckout.addEventListener('click', () => checkoutModal.close());
+
+        checkoutModal.addEventListener('click', (event) => {
+            if (event.target === checkoutModal) checkoutModal.close();
+        });
+
+        checkoutForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const formData = new FormData(checkoutForm);
+            const paymentNames = {
+                transferencia: 'Transferencia',
+                'otro-medio': 'Otro medio de pago'
+            };
+            const payment = formData.get('payment');
+            const items = cart.map((product) =>
+                `- ${product.title}${product.size ? ` (Talle ${product.size})` : ''} x${Number(product.quantity) || 1} — ${product.price}`
+            );
+            const message = [
+                'Hola, quiero realizar este pedido en Auren.',
+                '',
+                `Nombre: ${formData.get('name')}`,
+                `Correo: ${formData.get('email')}`,
+                `Teléfono: ${formData.get('phone')}`,
+                `Dirección de entrega: ${formData.get('address')}`,
+                `Forma de pago preferida: ${paymentNames[payment]}`,
+                '',
+                'Productos:',
+                ...items,
+                `Total a pagar: ${checkoutTotal.textContent}`,
+                '',
+                payment === 'transferencia'
+                    ? 'Por favor, envíame el alias o CBU para realizar el pago.'
+                    : 'Por favor, indícame qué otros medios de pago están disponibles.'
+            ].join('\n');
+            const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+
+            checkoutWhatsappLink.href = whatsappUrl;
+            checkoutWhatsappLink.hidden = false;
+            checkoutSuccess.hidden = false;
+            window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+        });
+    </script>
+</body>
+</html>
