@@ -441,6 +441,45 @@
             border-bottom: 1px solid rgba(234, 232, 231, 0.65);
             transition: border-color .2s ease;
         }
+        #resultados-busqueda {
+            position: absolute;
+            top: calc(100% + .5rem);
+            right: 0;
+            left: 0;
+            z-index: 60;
+            max-height: 18rem;
+            overflow-y: auto;
+            border: 1px solid rgba(91,76,51,.18);
+            background: #fffaf1;
+            box-shadow: 0 12px 30px rgba(33,31,27,.16);
+        }
+        #resultados-busqueda[hidden] { display: none; }
+        .search-result {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            gap: .75rem;
+            padding: .75rem 1rem;
+            color: #211f1b;
+            text-align: left;
+        }
+        .search-result-image {
+            width: 3.5rem;
+            height: 3.5rem;
+            flex-shrink: 0;
+            object-fit: cover;
+        }
+        .search-result-details {
+            display: flex;
+            min-width: 0;
+            flex-direction: column;
+            gap: .2rem;
+        }
+        .search-result:hover,
+        .search-result:focus-visible { background: rgba(138,111,62,.12); }
+        .search-result-category { color: #716b61; font-size: .75rem; }
+        .search-empty { padding: .75rem 1rem; color: #716b61; font-size: .875rem; }
+        .product-card[hidden] { display: none !important; }
         .header-search:focus-within,
         .header-search:hover {
             border-bottom-color: #8a6f3e;
@@ -495,7 +534,7 @@
         .newsletter-submit:focus-visible svg {
             transform: translateX(4px);
         }
-        .header-search img {
+        .header-search > img {
             filter: brightness(0) invert(1);
             opacity: .9;
             transition: filter .25s ease;
@@ -605,7 +644,7 @@
         .site-header.is-scrolled .header-search input::placeholder {
             color: #716b61;
         }
-        .site-header.is-scrolled .header-search img {
+        .site-header.is-scrolled .header-search > img {
             filter: none;
         }
         .site-header.is-scrolled #menu-btn {
@@ -697,7 +736,7 @@
             .trust-card { transition: none; }
             .trust-card:hover { transform: none; }
             .header-search input,
-            .header-search img { transition: none; }
+            .header-search > img { transition: none; }
         }
         .whatsapp-float {
             position: fixed;
@@ -740,8 +779,9 @@
 
             <div class="header-search relative mx-auto w-full max-w-[24rem]" role="search">
                 <label class="sr-only" for="product-search">Buscar productos</label>
-                <input id="product-search" type="search" placeholder="Buscar productos..." class="w-full rounded-2xl border border-slate-500 py-2 pl-4 pr-11 text-sm text-white placeholder:text-slate-500">
+                <input id="product-search" type="search" aria-controls="resultados-busqueda" aria-expanded="false" autocomplete="off" placeholder="Buscar productos..." class="w-full rounded-2xl border border-slate-500 py-2 pl-4 pr-11 text-sm text-white placeholder:text-slate-500">
                 <img src="lupa.png" alt="" class="pointer-events-none absolute right-3 top-1/2 h-7 w-7 -translate-y-1/2 object-contain opacity-60">
+                <ul id="resultados-busqueda" role="listbox" aria-label="Resultados de búsqueda" hidden></ul>
             </div>
 
             <div class="flex shrink-0 items-center gap-1 justify-self-end sm:gap-3">
@@ -1122,6 +1162,164 @@
     <script>AOS.init();</script>
 
     <script>
+
+        const productos = [
+            { title: 'Reloj de cuarzo unisex versatil', category: 'Relojes', image: 'reloj-foto-1.png', page: 'compras.html', searchTerms: 'Reloj clásico negro' },
+            { title: 'Reloj inteligente deportivo', category: 'Relojes', image: 'reloj-mujer-3.jpeg', page: 'compras.html', searchTerms: 'Reloj inteligente Reloj dorado elegante' },
+            { title: 'Reloj inteligente deportivo', category: 'Relojes', image: 'reloj-negro.png', page: 'compras.html', searchTerms: 'Reloj inteligente' },
+            { title: 'Reloj deportivo', category: 'Relojes', image: 'reloj-mujer-2.png', page: 'compras.html' },
+            { title: 'Reloj con malla metálica', category: 'Relojes', image: 'reloj-inteligente-h.png', page: 'compras.html' },
+            { title: 'Reloj clásico marrón', category: 'Relojes', image: 'reloj-aluminio.jpeg', page: 'compras.html' },
+            { title: 'Reloj ejecutivo', category: 'Relojes', image: 'reloj-azul.png', page: 'compras.html' },
+            { title: 'Reloj negro mate', category: 'Relojes', image: 'reloj-cristal.png', page: 'compras.html' },
+            { title: 'Reloj vintage', category: 'Relojes', image: 'reloj-cristal-dorado.png', page: 'compras.html' },
+            { title: 'Reloj de cuero negro', category: 'Relojes', image: 'reloj-mujer-rojo.png', page: 'compras.html' },
+            { title: 'Reloj clásico azul', category: 'Relojes', image: 'reloj-oro.png', page: 'compras.html' },
+            { title: 'Aros clásicos con forma de C', category: 'Joyas y bijouterie', image: 'aros.jpeg', page: 'accesorios.html', searchTerms: 'aros joyería' },
+            { title: 'Aros de aceros inoxidable', category: 'Joyas y bijouterie', image: 'aros-1.jpeg', page: 'accesorios.html', searchTerms: 'aros joyería' },
+            { title: 'Aros modernos', category: 'Joyas y bijouterie', image: 'aros-2.jpeg', page: 'accesorios.html', searchTerms: 'aros joyería' },
+            { title: 'Aros de diseño', category: 'Joyas y bijouterie', image: 'aros-4.jpeg', page: 'accesorios.html', searchTerms: 'aros joyería' },
+            { title: 'Aros de aceros inoxidable', category: 'Joyas y bijouterie', image: 'aros-5.jpeg', page: 'accesorios.html', searchTerms: 'aros joyería' },
+            { title: 'Aros de perlas', category: 'Joyas y bijouterie', image: 'aros-6.jpeg', page: 'accesorios.html', searchTerms: 'aros joyería' },
+            { title: 'Aro de diseño', category: 'Joyas y bijouterie', image: 'aros-7.jpeg', page: 'accesorios.html', searchTerms: 'aros joyería' },
+            { title: 'Set de joyas brillante', category: 'Joyas y bijouterie', image: 'joyeria.jpeg', page: 'accesorios.html', searchTerms: 'joyería' },
+            { title: 'Collar corazon', category: 'Joyas y bijouterie', image: 'joyeria-3.jpeg', page: 'accesorios.html', searchTerms: 'cadena cadenas collares joyería' },
+            { title: 'Collar perlas', category: 'Joyas y bijouterie', image: 'joyeria-4.jpeg', page: 'accesorios.html', searchTerms: 'cadena cadenas collares joyería' },
+            { title: 'Collar mariposa', category: 'Joyas y bijouterie', image: 'joyeria-5.jpeg', page: 'accesorios.html', searchTerms: 'cadena cadenas collares joyería' },
+            { title: 'Collar duo', category: 'Joyas y bijouterie', image: 'joyeria-6.jpeg', page: 'accesorios.html', searchTerms: 'cadena cadenas collares joyería' },
+            { title: 'Collar estrella', category: 'Joyas y bijouterie', image: 'joyeria-7.jpeg', page: 'accesorios.html', searchTerms: 'cadena cadenas collares joyería' },
+            { title: 'Pulsera de plata', category: 'Joyas y bijouterie', image: 'pulseria.jpeg', page: 'accesorios.html', searchTerms: 'pulsera pulseras joyería' },
+            { title: 'Remera de manga corta con estampado de letra', category: 'Indumentaria hombre', image: 'remera-hombre-hugg.png', page: 'indumentaria.html', searchTerms: 'Remera de hombre ropa' },
+            { title: 'Remera de manga corta con estampado minimalista', category: 'Indumentaria hombre', image: 'remera-hombre-marron.png', page: 'indumentaria.html', searchTerms: 'REMERAS ropa' },
+            { title: 'Remera Polo, formal', category: 'Indumentaria hombre', image: 'remera-hombre-con-cuello.png', page: 'indumentaria.html', searchTerms: 'REMERAS ropa' },
+            { title: 'Remera de bloques de color vintage', category: 'Indumentaria hombre', image: 'remera-hombre-gris-black.png', page: 'indumentaria.html', searchTerms: 'REMERAS ropa Lentes urbano black' },
+            { title: 'Black grisor', category: 'Indumentaria hombre', image: 'remeras-hombres-rayas.jpeg', page: 'indumentaria.html', searchTerms: 'REMERAS ropa' },
+            { title: 'pack / 3 remeras de manga corta', category: 'Indumentaria hombre', image: 'remeras-hombres-tres.jpeg', page: 'indumentaria.html', searchTerms: 'Set/3 Remeras ropa' },
+            { title: 'Remera Black', category: 'Indumentaria hombre', image: 'remera-black.png', page: 'indumentaria.html', searchTerms: 'Camisa clásica ropa' },
+            { title: 'Remera Boos', category: 'Indumentaria hombre', image: 'remera-hombre-boos.png', page: 'indumentaria.html', searchTerms: 'Remera básica ropa' },
+            { title: 'Remera Paris', category: 'Indumentaria hombre', image: 'remera-hombre-paris.png', page: 'indumentaria.html', searchTerms: 'Pantalón urbano ropa' },
+            { title: 'Black grisor', category: 'Indumentaria hombre', image: 'remera-hombre-black-grisor.png', page: 'indumentaria.html', searchTerms: 'Abrigo de temporada ropa' },
+            { title: 'Remera de ajuste regular, blusa casual', category: 'Indumentaria mujer', image: 'remera-mujer-ping-white.png', page: 'indumentaria.html', searchTerms: 'Vestido de temporada ropa' },
+            { title: 'Conjuto casual de 4 piezas, top ajustable', category: 'Indumentaria mujer', image: 'remeras-mujer-musculosa.jpeg', page: 'indumentaria.html', searchTerms: 'Vestido de temporada ropa' },
+            { title: '3 piezas/set, remera basicas casuales.', category: 'Indumentaria mujer', image: 'remeras-mujer-musculosa-grisor.jpeg', page: 'indumentaria.html', searchTerms: 'Vestido de temporada ropa' },
+            { title: 'Conjunto de 3 piezas, con manga dolma casual.', category: 'Indumentaria mujer', image: 'remeras-mujer-musculosa-rayas.jpeg', page: 'indumentaria.html', searchTerms: 'Vestido de temporada ropa' },
+            { title: 'Remera Lunar', category: 'Indumentaria mujer', image: 'remera-mujer-lunar.png', page: 'indumentaria.html', searchTerms: 'Blusa clásica ropa' },
+            { title: 'Remera Cristiano', category: 'Indumentaria mujer', image: 'remera-mujer-religion.png', page: 'indumentaria.html', searchTerms: 'Remera básica ropa' },
+            { title: 'Remera Casual', category: 'Indumentaria mujer', image: 'remera-mujer-casual.png', page: 'indumentaria.html', searchTerms: 'Pantalón urbano ropa' },
+            { title: 'Remera Vacacional', category: 'Indumentaria mujer', image: 'remera-mujer-vacaciones.png', page: 'indumentaria.html', searchTerms: 'Vestido de temporada ropa' }
+        ];
+
+        const buscador = document.getElementById('product-search');
+        const resultados = document.getElementById('resultados-busqueda');
+        const normalizarBusqueda = (text) => text
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim();
+
+        const catalogos = {
+            'compras.html': { title: 'Relojes', description: 'Ver todos los relojes', image: 'reloj.jpeg' },
+            'accesorios.html': { title: 'Joyas y bijouterie', description: 'Ver todas las joyas y accesorios', image: 'collares.jpeg' },
+            'indumentaria.html': { title: 'Indumentaria', description: 'Ver toda la indumentaria', image: 'ropa.jpeg' }
+        };
+
+        const abrirCatalogo = (pagina) => {
+            window.location.href = new URL(pagina, window.location.href).href;
+        };
+
+        const filtrarProductos = () => {
+            const text = normalizarBusqueda(buscador.value);
+            const palabras = text.split(/\s+/).filter((palabra) =>
+                palabra.length > 2 && !['con', 'del', 'las', 'los', 'para', 'una', 'uno'].includes(palabra)
+            );
+            const buscarEnProductos = (coincide) => productos.filter((producto) => {
+                const contenido = normalizarBusqueda(
+                    `${producto.title} ${producto.category} ${producto.searchTerms || ''}`
+                );
+                return coincide(contenido);
+            });
+            const coincidenciasExactas = text
+                ? buscarEnProductos((contenido) => contenido.includes(text))
+                : [];
+            const coincidenciasPorTodasLasPalabras = palabras.length
+                ? buscarEnProductos((contenido) => palabras.every((palabra) => contenido.includes(palabra)))
+                : [];
+            const encontrados = coincidenciasExactas.length
+                ? coincidenciasExactas
+                : coincidenciasPorTodasLasPalabras.length
+                    ? coincidenciasPorTodasLasPalabras
+                    : text
+                        ? buscarEnProductos((contenido) => palabras.some((palabra) => contenido.includes(palabra)))
+                        : [];
+            const paginasEncontradas = [...new Set(encontrados.map((producto) => producto.page))];
+            const catalogosEncontrados = paginasEncontradas.map((pagina) => ({
+                ...catalogos[pagina],
+                page: pagina
+            }));
+
+            resultados.replaceChildren();
+            if (text) {
+                if (catalogosEncontrados.length) {
+                    catalogosEncontrados.forEach((catalogo) => {
+                        const item = document.createElement('li');
+                        const button = document.createElement('button');
+                        const image = document.createElement('img');
+                        const details = document.createElement('span');
+                        const title = document.createElement('span');
+                        const category = document.createElement('span');
+
+                        button.type = 'button';
+                        button.className = 'search-result';
+                        button.setAttribute('role', 'option');
+                        button.dataset.catalogPage = catalogo.page;
+                        image.className = 'search-result-image';
+                        image.src = catalogo.image;
+                        image.alt = '';
+                        details.className = 'search-result-details';
+                        title.textContent = catalogo.title;
+                        category.className = 'search-result-category';
+                        category.textContent = catalogo.description;
+                        details.append(title, category);
+                        button.append(image, details);
+                        item.append(button);
+                        resultados.append(item);
+                    });
+                } else {
+                    const item = document.createElement('li');
+                    item.className = 'search-empty';
+                    item.textContent = 'No se encontraron catálogos para esa búsqueda';
+                    resultados.append(item);
+                }
+                resultados.hidden = false;
+                buscador.setAttribute('aria-expanded', 'true');
+            } else {
+                resultados.hidden = true;
+                buscador.setAttribute('aria-expanded', 'false');
+            }
+        };
+
+        buscador.addEventListener('input', filtrarProductos);
+        buscador.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                const primerResultado = resultados.querySelector('[data-catalog-page]');
+                if (primerResultado) {
+                    event.preventDefault();
+                    abrirCatalogo(primerResultado.dataset.catalogPage);
+                }
+            } else if (event.key === 'Escape') {
+                resultados.hidden = true;
+                buscador.setAttribute('aria-expanded', 'false');
+            }
+        });
+        resultados.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-catalog-page]');
+            if (!button) return;
+
+            abrirCatalogo(button.dataset.catalogPage);
+        });
+
+
+
         const STORAGE_KEYS = { favorites: 'auren-favoritos', cart: 'auren-carrito' };
         const menuBtn = document.getElementById('menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
